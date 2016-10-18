@@ -5,8 +5,16 @@
 import random,hashlib,math,time
 
 from flask import current_app
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash,check_password_hash
 
 from app import db
+from . import login_manager
+
+@login_manager.user_loader
+def load_user(user_id):
+    """加载用户的回调函数"""
+    return User.query.get(int(user_id))
 
 
 class Question(db.Model):
@@ -54,18 +62,55 @@ class Answer(db.Model):
         db.session.add(self)
         db.session.commit()
 
-class User(db.Model):
+class User(UserMixin,db.Model):
     """用户"""
     __tablename__ = 'users'
 
     id = db.Column(db.Integer,primary_key=True)
-    username = db.Column(db.String(128),index=True,unique=True) # 用户名,微信号
+    username = db.Column(db.String(64),index=True,unique=True) # 用户名,微信号
+    email = db.Column(db.String(64),index=True,unique=True) # 用户邮箱
+    password_hash = db.Column(db.String(128),index=True) # 密钥签名
     phone = db.Column(db.String(11),index=True,unique=True) # 用户手机号
     scores = db.Column(db.Integer,index=True,default=0) # 总得分
     is_finished = db.Column(db.Boolean,default=False) # 测试完成标记
     start_time = db.Column(db.String(32),index=True) # 测试开始时间
     end_time = db.Column(db.String(32),index=True) # 截止时间
     answer_list = db.relationship('Answer',backref='user') # 定义反向关系
+    role_id = db.Column(db.Integer,db.ForeignKey('roles.id')) # 定义外键
+
+    def __init__(self,**kwargs):
+        """定义默认权限"""
+        super(User,self).__init__(**kwargs) # 读取父类属性
+        if self.role is None:
+            if self.email in current_app.config['FLASKY_ADMIN']:
+                self.role = Role.query.filter_by(permissions=0xff).first()
+            else:
+                self.role = Role.query.filter_by(default=True).first()
+
+    @property
+    def password(self):
+        """密码属性"""
+        raise AttributeError('密码不可以访问')
+
+    @property.setter
+    def password(self,password):
+        """只写属性，设置密码"""
+        self.password_hash = generate_password_hash(password=password)
+
+    def verify_password(self,password):
+        """检查密码"""
+        return check_password_hash(self.password_hash,password)
+    
+
+
+    def can(self,permissions):
+        """检测是否有相应权限"""
+        return self.role is not None and \
+               (self.role.permissions & permissions) == permissions
+
+    def is_administrator(self):
+        """是否为管理员"""
+        return self.can(Permission.ADMINISTRATOR)
 
 
     def createQuestions(self):
@@ -153,6 +198,47 @@ class User(db.Model):
         sha1 = hashlib.sha1()
         sha1.update(str(username))
         return sha1.hexdigest()
+
+class Role(db.Model):
+    """权限模型"""
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer,primary_key=True)
+    name = db.Column(db.String(32),index=True,unique=True) # 权限名称
+    permissions = db.Column(db.Integer) # 权限集
+    default = db.Column(db.Boolean) # 是否默认角色
+    user_list = db.relationship('User',backref='role',lazy='dynamic') # 定义反向关系
+
+    @staticmethod
+    def insert_role():
+        """定义插入角色方法"""
+        roles = {
+            'User':(Permission.WRITE_ANSWER |
+                    Permission.READ_RESULT,True),
+            'DataManager':(Permission.WRITE_ANSWER |
+                           Permission.READ_RESULT |
+                           Permission.READ_RESULTS |
+                           Permission.WRITE_QUESTION,False),
+            'ADMINISTRATOR':(0xff,False)
+        }
+        for r in roles:
+            role = Role.query.filter_by(name=r).first()
+            if role is None:
+                role = Role(name=r)
+            role.permissions = roles[r][0]
+            role.default = roles[r][1]
+            db.session.add(r)
+            db.session.commit()
+
+
+class Permission:
+    """定义权限属性"""
+    WRITE_ANSWER = 0x01
+    READ_RESULT = 0x02
+    READ_RESULTS = 0x04
+    WRITE_QUESTION = 0x08
+    ADMINISTRATOR = 0x80
+
 
 
 

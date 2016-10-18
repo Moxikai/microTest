@@ -10,9 +10,8 @@ import time
 from flask import redirect,url_for,render_template,request,current_app,flash,session
 from .. import db
 from . import main
-from ..forms import AnswerForm,RegisterForm,QuestionForm
+from app.main.forms import AnswerForm,RegisterForm,QuestionForm
 from ..models import Answer,Question,User
-from ..changetime import changeTime
 
 
 @main.route('/',methods=['GET','POST'])

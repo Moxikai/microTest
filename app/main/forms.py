@@ -6,7 +6,7 @@ from flask_wtf import Form
 from wtforms import StringField,SubmitField,SelectField,HiddenField,RadioField,TextAreaField,IntegerField
 from wtforms.validators import DataRequired,Length,ValidationError
 
-from .models import User,Answer
+from app.models import User,Answer
 
 class RegisterForm(Form):
     """注册表单"""
