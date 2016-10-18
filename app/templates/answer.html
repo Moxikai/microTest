@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+    {{ super() }}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6">
+
+                        <span>
+                            {{ answer.order_id }}.
+                            {{ answer.question.title }}
+                        </span>
+
+                        <span>
+                            {{ wtf.quick_form(form) }}
+                        </span>
+                        {% if page > 1 %}
+                        <span>
+                            <div class="btn btn-default"><a href="{{ url_for('main.answer',user_id=answer.user_id,page=page-1) }}">上一题</a></div>
+                        </span>
+                        {% endif %}
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

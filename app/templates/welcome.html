@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6">
+                <p>
+                    欢迎参与烽火台反欺诈小测验
+                </p>
+                <p>
+                    请输入微信号开始测试吧
+                </p>
+                <span>
+                    {{ wtf.quick_form(form) }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

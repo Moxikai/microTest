@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {{ super() }}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6">
+                <!---普通用户显示个人的答题记录-->
+                <!---管理员显示所有用户的记录---->
+                <ul>
+                    {% for answer in user.answer_list %}
+                    <li>
+                        <span>第{{ answer.order_id }}题</span>
+                        <br>
+                        <span>答案：{{ answer.answer }}</span>
+                        <br>
+                        <span>正确答案：{{ answer.question.answer_right }}</span>
+                        <br>
+                        <span>解析：</span>
+                        <br>
+                        <span>{{ answer.question.answer_description }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {{ super() }}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6">
+                <p>本次测验结果</p>
+                <ul>
+                    <li>
+                        <p>本次耗时：{{ spend_time }}</p>
+                    </li>
+                    <li>
+                        <p>总得分：{{ scores }}</p>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.result_detail',user_id=user_id) }}">
+                            <strong>查看答案解析</strong>
+                        </a>
+                    </li>
+                </ul>
+
+                {% if scores/scores_right > 0.95 %}
+                    <p>大牛🐮，请手下我的膝盖！</p>
+                {% elif scores/scores_right > 0.6 %}
+                    <p>恭喜你，及格了</p>
+                {% else %}
+                    <p>少年，妈妈怎么放心让你一个人出门</p>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
