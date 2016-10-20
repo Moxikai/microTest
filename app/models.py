@@ -15,7 +15,6 @@ class Question(db.Model):
 
     id = db.Column(db.Integer,primary_key=True) # 试题id
     title = db.Column(db.Text) # 题目，试题描述
-    type = db.Column(db.String(32)) # 题目类型
     choices = db.Column(db.Text) # 试题选项，以换行符分隔
     score_right = db.Column(db.Integer,index=True) # 标准得分
     answer_right = db.Column(db.String(32),index=True) # 答案
@@ -25,14 +24,8 @@ class Question(db.Model):
     def transStrToList(self):
         """单选项字符串转换成列表"""
         choice_list = self.choices.split(';')  # 注意是以英文下分号分隔
-        if len(choice_list) == 2:
-            return [('A', choice_list[0]), ('B', choice_list[1])]
-        elif len(choice_list) == 3:
-            return [('A', choice_list[0]), ('B', choice_list[1]), ('C', choice_list[2])]
-        elif len(choice_list) == 4:
-            return [('A', choice_list[0]), ('B', choice_list[1]), ('C', choice_list[2]), ('D', choice_list[3])]
-        else:
-            return []
+        choice_list = [(item.split('.')[0],item.split('.')[1]) for item in choice_list]
+        return choice_list
 
 class Answer(db.Model):
     """答题"""

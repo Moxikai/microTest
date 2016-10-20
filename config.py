@@ -19,6 +19,7 @@ class DevelopingConfig(Config):
                               os.environ.get('SQLALCHEMY_DATABASE_URI')
     QUESTION_COUNT = 4
     ANSWERS_PER_PAGE = 1
+    QUESTIONS_PER_PAGE = 10
 
 class ProductionConfig(Config):
     """生产配置"""
@@ -33,4 +34,4 @@ config = {
 
 
 if __name__ == '__main__':
-    print base_dir
+    print os.path.join(base_dir,'dev.db')

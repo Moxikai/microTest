@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+    {{ super() }}
+
+                <form action="" method="post" class="container form-horizontal" role="form">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.title.label(class="control-label col-md-2") }}
+                        <div class="col-md-6">
+                            {{ form.title(class="rows=2 form-control",required="") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class=" control-label col-md-2">
+                             <h5>答案选项:</h5>
+                        </div>
+                        <div class="control-label col-md-6">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.choices_A.label(class="control-label col-md-2") }}
+                        <div class="col-md-6">
+                            {{form.choices_A(class="form-control",required="")  }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.choices_B.label(class="control-label col-md-2") }}
+                        <div class="col-md-6">
+                            {{ form.choices_B(class="form-control",required="") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.choices_C.label(class="control-label col-md-2") }}
+                        <div class="col-md-6">
+                            {{ form.choices_C(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.choices_D.label(class="control-label col-md-2") }}
+                        <div class="col-md-6">
+                            {{ form.choices_D(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-group col-md-6 col-md-push-2">
+                            {{ form.answer_right.label(class="control-label col-md-2") }}
+                            <div class="col-md-4">
+                                {{ form.answer_right(class="form-control",required="") }}
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6 col-md-pull-1">
+                            {{ form.score_right.label(class="control-label col-md-2") }}
+                            <div class="col-md-4">
+                                {{ form.score_right(type="number",class="form-control",required="") }}
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.answer_description.label(class="control-label col-md-2") }}
+                        <div class="col-md-6">
+                            {{ form.answer_description(class="form-control",required="") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+
+                        </div>
+                        <div class="col-md-6">
+                             {{ form.submit(class="btn btn-success form-control") }}
+                        </div>
+
+                    </div>
+                </form>
+
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $('textarea').each(function () { this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
+        }).on('input', function () { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
+
+    </script>
+{% endblock %}

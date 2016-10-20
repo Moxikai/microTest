@@ -84,19 +84,90 @@ def question_add():
     form = QuestionForm()
     if form.validate_on_submit():
         """处理post"""
-        new_question = Question(title=form.title.data,
-                                type=form.type.data,
-                                choices=form.choices.data,
-                                score_right=form.score_right.data,
-                                answer_right=form.answer_right.data,
-                                answer_description=form.answer_description.data,
-                                )
-        db.session.add(new_question)
-        db.session.commit()
-        flash('题目%s已保存'%(form.title.data))
-        return redirect(url_for('main.question_add'))
+        try:
+            choice_list=[('A',form.choices_A.data),('B',form.choices_B.data),
+                         ('C',form.choices_C.data),('D',form.choices_D.data)]
+            choice = ';'.join(item[0]+'.'+item[1] for item in choice_list if item[1])
 
-    return render_template('question_add.html',form=form)
+            new_question = Question(title=form.title.data,
+                                    choices=choice,
+                                    score_right=form.score_right.data,
+                                    answer_right=form.answer_right.data,
+                                    answer_description=form.answer_description.data,
+                                    )
+            db.session.add(new_question)
+            db.session.commit()
+            flash('题目%s已保存'%(form.title.data))
+            return redirect(url_for('main.question_add'))
+        except TypeError:
+            return '<p>choices:%s</p>'%(form.choices_A.data)
+
+    return render_template('question_add2.html',form=form)
+
+
+@main.route('/question/edit/<int:id>',methods=['GET','POST'])
+def question_edit(id):
+    """题目修改"""
+    question = Question.query.get_or_404(id)
+    form = QuestionForm()
+    if request.method == 'POST':
+        form_ = request.form
+        choice_list = [('A', form_['choices_A']),('B', form_['choices_B']),
+                       ('C', form_['choices_C']),('D', form_['choices_D'])]
+        choice_str = ';'.join(item[0] + '.' + item[1] for item in choice_list if item[1])
+
+        question.choices = choice_str
+        question.title = form_['title']
+        question.score_right = form_['score_right']
+        question.answer_right = form_['answer_right']
+        question.answer_description = form_['answer_description']
+        db.session.add(question)
+        db.session.commit()
+
+        return redirect(url_for('main.question'))
+
+    form.title.data = question.title
+    choice_list = question.transStrToList()
+    for item in choice_list:
+        if item[0] == 'A':
+            form.choices_A.data = item[1]
+        elif item[0] == 'B':
+            form.choices_B.data = item[1]
+        elif item[0] == 'C':
+            form.choices_C.data = item[1]
+        elif item[0] == 'D':
+            form.choices_D.data = item[1]
+
+    form.answer_right.data = question.answer_right
+    form.score_right.data = question.score_right
+    form.answer_right.data = question.answer_description
+
+    return render_template('question_add2.html',form=form)
+
+@main.route('/question',methods=['GET','POST'])
+def question():
+    """题库题目列表"""
+    page = request.args.get('page')
+    page = int(page) if page else 1
+    questions = Question.query
+    pagination = questions.paginate(page,
+                                         current_app.config['QUESTIONS_PER_PAGE'],False)
+    question_list = pagination.items
+    count = questions.count()
+    return render_template('question_list.html',
+                           count=count,
+                           pagination=pagination,
+                           question_list=question_list)
+
+@main.route('/question/delete/<int:id>')
+def question_delete(id):
+    """删除题目"""
+    question = Question.query.get_or_404(id)
+    db.session.delete(question)
+    db.session.commit()
+    flash('序号为%s的题目删除成功！'%(id))
+    return redirect(url_for('main.question'))
+
 
 @main.route('/retest/<int:user_id>')
 def retest(user_id):

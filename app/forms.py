@@ -31,11 +31,17 @@ class AnswerForm(Form):
 class QuestionForm(Form):
     """试题提交表单"""
     title = TextAreaField('题目描述',validators=[DataRequired()])
-    type = StringField('类型')
-    choices = TextAreaField('答案选项',validators=[DataRequired()])
+    choices_A = TextAreaField('A.',validators=[DataRequired()])
+    choices_B = TextAreaField('B.',validators=[DataRequired()])
+    choices_C = TextAreaField('C.')
+    choices_D = TextAreaField('D.')
     score_right = IntegerField('满分')
-    answer_right = StringField('正确答案',validators=[DataRequired()])
+    answer_right = SelectField(label='答案',
+                              validators=[DataRequired()],
+                              choices=[('A','A'),('B','B'),('C','C'),('D','D')])
     answer_description = TextAreaField('答案解析',validators=[DataRequired()])
     submit = SubmitField('提交')
+
+
 
 

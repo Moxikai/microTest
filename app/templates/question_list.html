@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as macros %}
+{% block content %}
+    {{ super() }}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <span class="btn btn-danger"><a href="{{ url_for('main.question_add') }}">新增题目</a></span>
+                <div class="page-header">
+                    <p>当前题库共有{{ count }}条题目</p>
+                </div>
+                {% for question in question_list %}
+                <div>
+                    <p> {{ question.id }}. {{ question.title }}</p>
+                    <ul>
+                        <li>
+                            <p> 答案选项：</p>
+                            <p>{{ question.choices }}</p>
+                        </li>
+                        <li>
+                            <p> 正确答案：</p>
+                            <p>{{ question.answer_right }}</p>
+                        </li>
+                        <li>
+                            <p>标准分值：</p>
+                            <p>{{ question.score_right }}</p>
+                        </li>
+                        <li>
+                            <p>答案解析：</p>
+                            <p>{{ question.answer_description }}</p>
+                        </li>
+                    </ul>
+                    <div class="btn btn-danger btn-small">
+                        <a href="{{ url_for('main.question_delete',id=question.id) }}" title="删除">删除</a>
+                    </div>
+                    <div class="btn btn-info btn-small">
+                        <a href="{{ url_for('main.question_edit',id=question.id) }}" title="编辑">编辑</a>
+                    </div>
+                </div>
+                 {% endfor %}
+                <div class="pagination">
+                    {{ macros.pagination_widget(pagination,'main.question') }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
