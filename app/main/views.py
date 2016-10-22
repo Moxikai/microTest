@@ -14,11 +14,11 @@ from ..forms import AnswerForm,RegisterForm,QuestionForm
 from ..models import Answer,Question,User
 from ..changetime import changeTime
 
-@main.route('/')
+@main.route('/hello')
 def index():
     return 'hello,world!'
 
-@main.route('/welcome',methods=['GET','POST'])
+@main.route('/',methods=['GET','POST'])
 def welcome():
     """欢迎页，游客首页"""
     form = RegisterForm()
@@ -38,7 +38,10 @@ def welcome():
     new_user = User(username=username)
     db.session.add(new_user)
     db.session.commit()
-    session['user_id'] = new_user.id  # 通过session会话保存临时用户的id
+    try:
+        session['user_id'] = new_user.id  # 通过session会话保存临时用户的id
+    except:
+        return 'session is wrong'
     return render_template('welcome.html',form=form)
 
 

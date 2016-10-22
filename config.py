@@ -31,7 +31,7 @@ class ProductionConfig(Config):
 
 class SaeProductionConfig(Config):
     """新浪SAE配置"""
-    SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s'\
+    SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s' \
     %(MYSQL_USER,MYSQL_PASS,
       MYSQL_HOST,int(MYSQL_PORT),MYSQL_DB)
 class SaeDevelopingConfig(Config):
