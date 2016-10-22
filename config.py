@@ -12,7 +12,7 @@ class Config():
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 10 # 连接池间隔时间
-    SQLALCHEMY_ECHO = True
+    #SQLALCHEMY_ECHO = True
 
 
 class DevelopingConfig(Config):
