@@ -4,7 +4,7 @@
 """
 import os
 
-from flask_migrate import Migrate,MigrateCommand
+#from flask_migrate import Migrate,MigrateCommand
 from flask_script import Shell,Manager
 
 from app import db,create_app
