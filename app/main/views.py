@@ -14,6 +14,10 @@ from ..forms import AnswerForm,RegisterForm,QuestionForm
 from ..models import Answer,Question,User
 from ..changetime import changeTime
 
+@main.teardown_request
+def teardown_request(func):
+    db.session.close()
+
 @main.route('/hello')
 def index():
     return 'hello,world!'
