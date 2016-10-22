@@ -14,8 +14,11 @@ from ..forms import AnswerForm,RegisterForm,QuestionForm
 from ..models import Answer,Question,User
 from ..changetime import changeTime
 
+@main.route('/')
+def index():
+    return 'hello,world!'
 
-@main.route('/',methods=['GET','POST'])
+@main.route('/welcome',methods=['GET','POST'])
 def welcome():
     """欢迎页，游客首页"""
     form = RegisterForm()
