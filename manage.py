@@ -11,7 +11,7 @@ from app import db,create_app
 from app.models import Answer,Question,User
 
  # 实例化app
-app = create_app(os.environ.get('FLASK_CONFIG') or 'default')
+app = create_app(os.environ.get('FLASK_CONFIG') or 'sae')
 manager = Manager(app)
 migrate = Migrate(app,db)
 
