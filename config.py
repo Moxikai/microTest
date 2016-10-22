@@ -38,7 +38,7 @@ class SaeProductionConfig(Config):
 config = {
     'developing':DevelopingConfig,
     'production':ProductionConfig,
-    'sea':SaeProductionConfig,
+    'sae':SaeProductionConfig,
     'default':DevelopingConfig,
 
 }
