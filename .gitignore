@@ -2,3 +2,6 @@
 migrations/
 *.db
 .idea/
+bundle_local.py
+env/
+.DS_Store
