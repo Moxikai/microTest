@@ -34,11 +34,16 @@ class SaeProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s'\
     %(MYSQL_USER,MYSQL_PASS,
       MYSQL_HOST,int(MYSQL_PORT),MYSQL_DB)
+class SaeDevelopingConfig(Config):
+    """测试mysql数据库"""
+    SQLALCHEMY_DATABASE_URI = 'mysql://root@localhost:3306/microtest'
+
 
 config = {
     'developing':DevelopingConfig,
     'production':ProductionConfig,
     'sae':SaeProductionConfig,
+    'sae_test':SaeDevelopingConfig,
     'default':DevelopingConfig,
 
 }
