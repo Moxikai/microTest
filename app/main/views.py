@@ -34,7 +34,7 @@ def welcome():
         user.start_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) # 登记开始时间
         db.session.add(user)
         db.session.commit()
-        db.session.close()
+
         flash('登记成功，马上转到测试')
 
         return redirect(url_for('main.answer',user_id=user.id))
@@ -43,11 +43,13 @@ def welcome():
     new_user = User(username=username)
     db.session.add(new_user)
     db.session.commit()
-    db.session.close() # sae要求
+
+     # sae要求
     try:
         session['user_id'] = new_user.id  # 通过session会话保存临时用户的id
     except:
         return 'session is wrong'
+
     return render_template('welcome.html',form=form)
 
 
@@ -55,6 +57,7 @@ def welcome():
 def answer(user_id):
     """答题视图"""
     user = User.query.get_or_404(user_id)  # 查询用户
+    print '进入答题页面,当前用户是----------------%s------------------'%(user.username)
     form = AnswerForm()
     page = request.args.get('page')
     page = int(page) if page else 1
@@ -71,23 +74,29 @@ def answer(user_id):
             return redirect(url_for('main.answer',page=page,user_id=user_id))
 
     if not user.answer_list:
+        print '当前用户-------%s---------不能存在答题记录,稍后创建答题'%(user.username)
         user.createQuestions() # 不存在答题记录,则创建随机记录
-    pagination = Answer.query.filter(Answer.user_id==user_id).\
-        order_by(Answer.order_id.asc()).paginate(page,\
-                                                 current_app.config['ANSWERS_PER_PAGE'],False)
-    answer =  pagination.items[0]
-    count = Answer.query.filter(Answer.user_id==user_id).count()
-    """初始化部分表单"""
-    form.id.data = answer.id
-    form.answer_choice.choices = answer.question.transStrToList()
-    if answer.answer:
-        form.answer_choice.data = answer.answer
-    return render_template('answer2.html',
-                           page=page,
-                           user=user,
-                           answer=answer,
-                           count=count,
-                           form=form)
+
+    try:
+        #pagination = Answer.query.filter(Answer.user_id==user_id).order_by(Answer.order_id.asc()).paginate(page,2,False)
+        answer_list = Answer.query.filter(Answer.user_id == user_id).order_by(Answer.order_id.asc()).all()
+        print '查询到结果是----------%s个------------'%(len(answer_list))
+        answer = answer_list[page-1]
+
+        count = Answer.query.filter(Answer.user_id==user_id).count()
+        """初始化部分表单"""
+        form.id.data = answer.id
+        form.answer_choice.choices = answer.question.transStrToList()
+        if answer.answer:
+            form.answer_choice.data = answer.answer
+        return render_template('answer2.html',
+                               page=page,
+                               user=user,
+                               answer=answer,
+                               count=count,
+                               form=form)
+    except Exception as e:
+            return '出错了,%s'%e
 
 
 @main.route('/question/add',methods=['GET','POST'])
@@ -109,7 +118,7 @@ def question_add():
                                     )
             db.session.add(new_question)
             db.session.commit()
-            db.session.close()
+
             flash('题目%s已保存'%(form.title.data))
             return redirect(url_for('main.question_add'))
         except TypeError:
@@ -136,7 +145,7 @@ def question_edit(id):
         question.answer_description = form_['answer_description']
         db.session.add(question)
         db.session.commit()
-        db.session.close()
+
         return redirect(url_for('main.question'))
 
     form.title.data = question.title
@@ -178,7 +187,7 @@ def question_delete(id):
     question = Question.query.get_or_404(id)
     db.session.delete(question)
     db.session.commit()
-    db.session.close()
+
     flash('序号为%s的题目删除成功！'%(id))
     return redirect(url_for('main.question'))
 
@@ -201,7 +210,7 @@ def result(user_id):
         user.end_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(end_time))
         db.session.add(user)
         db.session.commit()
-        db.session.close()
+
         """计算测试时间"""
         spend_time = user.calculate_spend_time()
         """计算总得分"""

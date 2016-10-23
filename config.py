@@ -13,6 +13,9 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 10 # 连接池间隔时间
     #SQLALCHEMY_ECHO = True
+    QUESTION_COUNT = 2
+    ANSWERS_PER_PAGE = 1
+    QUESTIONS_PER_PAGE = 10
 
 
 class DevelopingConfig(Config):
@@ -20,7 +23,7 @@ class DevelopingConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///%s'%(os.path.join(base_dir,'dev.db')) or \
                               os.environ.get('SQLALCHEMY_DATABASE_URI')
-    QUESTION_COUNT = 4
+    QUESTION_COUNT = 2
     ANSWERS_PER_PAGE = 1
     QUESTIONS_PER_PAGE = 10
 
@@ -36,7 +39,7 @@ class SaeProductionConfig(Config):
       MYSQL_HOST,int(MYSQL_PORT),MYSQL_DB)
 class SaeDevelopingConfig(Config):
     """测试mysql数据库"""
-    SQLALCHEMY_DATABASE_URI = 'mysql://root@localhost:3306/microtest'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:zhu098123@localhost:3306/app_microtest'
 
 
 config = {

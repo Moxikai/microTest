@@ -64,8 +64,12 @@ class User(db.Model):
     def createQuestions(self):
         """创建随机题库"""
         question_list = Question.query.all()
-        random_list = random.sample(question_list, current_app.config['QUESTION_COUNT'])
+        print '查询到试题总数为---------------%s------------------'%(len(question_list))
+
+        random_list = random.sample(question_list,2)
+
         order_id = 1
+
         for question in random_list:
             new_answer = Answer(order_id=order_id,
                                 question_id=question.id,
@@ -73,7 +77,10 @@ class User(db.Model):
                                 )
             db.session.add(new_answer)
             db.session.commit()
+
             order_id += 1
+        #db.session.close()
+
 
     def deleteQuestions(self):
         """删除答题记录"""
