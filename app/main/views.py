@@ -78,12 +78,12 @@ def answer(user_id):
         user.createQuestions() # 不存在答题记录,则创建随机记录
 
     try:
-        #pagination = Answer.query.filter(Answer.user_id==user_id).order_by(Answer.order_id.asc()).paginate(page,2,False)
-        answer_list = Answer.query.filter(Answer.user_id == user_id).order_by(Answer.order_id.asc()).all()
-        print '查询到结果是----------%s个------------'%(len(answer_list))
-        answer = answer_list[page-1]
-
+        pagination = Answer.query.filter(Answer.user_id==user_id).order_by(Answer.order_id.asc()).paginate(page,
+                                                                                                           current_app.config['ANSWERS_PER_PAGE'],False)
+        #answer_list = Answer.query.filter(Answer.user_id == user_id).order_by(Answer.order_id.asc()).all()
+        answer = pagination.items[0]
         count = Answer.query.filter(Answer.user_id==user_id).count()
+        print '本次测试题目:------------------%s个----------------'%(count)
         """初始化部分表单"""
         form.id.data = answer.id
         form.answer_choice.choices = answer.question.transStrToList()

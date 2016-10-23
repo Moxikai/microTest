@@ -66,10 +66,8 @@ class User(db.Model):
         question_list = Question.query.all()
         print '查询到试题总数为---------------%s------------------'%(len(question_list))
 
-        random_list = random.sample(question_list,2)
-
+        random_list = random.sample(question_list,current_app.config['QUESTION_COUNT'])
         order_id = 1
-
         for question in random_list:
             new_answer = Answer(order_id=order_id,
                                 question_id=question.id,
