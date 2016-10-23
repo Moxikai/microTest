@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block content %}
+
+    {{ super() }}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+
+            </div>
+            <div class="col-md-4">
+                <div class="page-header">
+                    <h4>请注册</h4>
+                </div>
+                {{ wtf.quick_form(form) }}
+            </div>
+            <div class="col-md-4">
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

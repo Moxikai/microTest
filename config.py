@@ -13,9 +13,10 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 10 # 连接池间隔时间
     #SQLALCHEMY_ECHO = True
-    QUESTION_COUNT = 2
+    QUESTIONS_COUNT_PER_TEST = 2 # 每次测试题目总数
     ANSWERS_PER_PAGE = 1
-    QUESTIONS_PER_PAGE = 10
+    QUESTIONS_PER_PAGE = 10 # 每页显示题目数量(题库管理界面)
+    LOGIN_MODE = 0 # 登录模式,0为输入昵称,普通登录;1为从微信验证
 
 
 class DevelopingConfig(Config):
@@ -23,9 +24,6 @@ class DevelopingConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///%s'%(os.path.join(base_dir,'dev.db')) or \
                               os.environ.get('SQLALCHEMY_DATABASE_URI')
-    QUESTION_COUNT = 2
-    ANSWERS_PER_PAGE = 1
-    QUESTIONS_PER_PAGE = 10
 
 class ProductionConfig(Config):
     """生产配置"""
@@ -37,8 +35,9 @@ class SaeProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s' \
     %(MYSQL_USER,MYSQL_PASS,
       MYSQL_HOST,int(MYSQL_PORT),MYSQL_DB)
+
 class SaeDevelopingConfig(Config):
-    """测试mysql数据库"""
+    """测试本地mysql数据库"""
     SQLALCHEMY_DATABASE_URI = 'mysql://root:zhu098123@localhost:3306/app_microtest'
 
 
