@@ -3,26 +3,37 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block content %}
+    {{ super() }}
     <div class="container">
         <div class="row">
-            <div class="col-sm-6">
-                <h2>
-                    你会被骗吗?
-                </h2>
-                <p>
-                    快来试试菲凡烽火台反欺诈小测试!
-                </p>
-                <p>看看你会被骗的几率有多大</p>
-                <p>(ps:满分可获得50元话费)</p>
-                <span>测试说明</span>
+            <div class="col-xs-12">
+                <h1>你会轻易被骗吗？</h1>
+                <p>来菲凡烽火台挑战一下！</p>
+            </div>
+        </div>
+
+        <div class="page-header">
+            <!--占坑-->
+        </div>
+        <div class="row">
+            <div class="btn btn-large btn-warning col-xs-4 col-xs-push-4 ">
+                <a href="#">开始</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <h5>规则如下：</h5>
                 <ul>
-                    <li>随机选取10道题目,完成后查看测试结果</li>
-                    <li>最终结果满分,并且按照用时由低到高排列,月度排名前三者,获赠100元话费</li>
-                    <li>每个微信号仅限1次,分享给朋友可额外获得1一次机会,分享越多,机会越多</li>
+                    <li>随机抽取10道题目,完成后提交</li>
+                    <li>满分即可获得50元话费</li>
+                    <li>按照完成时间从低到高，月度排名前3可获得100元话费</li>
+                    <li>每个微信号限1次闯关机会，每邀请1个朋友增加1次机会</li>
                 </ul>
             </div>
-            <span><a href="{{ url_for('main.answer') }}">开始测试</a></span>
         </div>
-    </div>
 
+
+
+
+    </div>
 {% endblock %}

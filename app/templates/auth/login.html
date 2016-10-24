@@ -14,10 +14,15 @@
                     <h4>请登录</h4>
                 </div>
                 {{ wtf.quick_form(form) }}
+                <div class="page-header">
+
+                </div>
+                <p>没有账户?</p>
+                <span><a href="{{ url_for('auth.register') }}">点击这里注册</a></span>
             </div>
             <div class="col-md-4">
-                <h4>没有账户?</h4>
-                <span><a href="{{ url_for('auth.register') }}">点击这里注册</a></span>
+
+
             </div>
         </div>
     </div>

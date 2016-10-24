@@ -2,7 +2,7 @@
 """
 数据模型
 """
-import random,hashlib,math,time
+import random,hashlib,math,time,datetime
 
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask import current_app
@@ -60,6 +60,20 @@ class Answer(db.Model):
         db.session.add(self)
         db.session.commit()
 
+
+class Share(db.Model):
+    """分享模型"""
+    __tablename__ = 'shares'
+
+    shared_id = db.Column(db.Integer,
+                          db.ForeignKey('users.id'),
+                          primary_key=True)
+    accepted_id = db.Column(db.Integer,
+                            db.ForeignKey('users.id'),
+                            primary_key=True)
+    timestamp = db.Column(db.DateTime,default=datetime.datetime.utcnow)
+
+
 class User(UserMixin,db.Model):
     """用户"""
     __tablename__ = 'users'
@@ -75,16 +89,19 @@ class User(UserMixin,db.Model):
     province = db.Column(db.String(32),index=True) # 省
     test_list = db.relationship('Test',backref='user') # 定义反向关系
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
-    accepted = db.relationship('Share',
-                               foreigin_keys=[Share.shared_id],
+    """分享和接受的自引用关系"""
+    accepter_list = db.relationship('Share',
+                               foreign_keys=[Share.shared_id],
                                backref=db.backref('sharer',lazy='joined'),
                                lazy='dynamic',
                                cascade='all,delete-orphan')
-    sharers = db.relationship('Share',
-                              foreigin_keys=[Share.accepted_id],
+    sharer_list = db.relationship('Share',
+                              foreign_keys=[Share.accepted_id],
                               backref=db.backref('accepter',lazy='joined'),
                               lazy='dynamic',
                               cascade='all,delete-orphan')
+
+
     @property
     def password(self):
         """密码属性"""
@@ -161,7 +178,7 @@ class AnonymousUser(AnonymousUserMixin):
 
     def is_administrator(self):
         return False
-
+login_manager.anonymous_user = AnonymousUser # 定义游客，统一权限检查
 
 class Role(db.Model):
     """角色模型"""
@@ -177,12 +194,12 @@ class Role(db.Model):
     def insert_role():
         """插入角色"""
         roles = {
-            'User': (Permissions.WRITE_ANSWER |
-                     Permissions.READ_RESULT, True),
-            'DataAdmin': (Permissions.WRITE_ANSWER |
-                          Permissions.READ_RESULT |
-                          Permissions.READ_RESULTS |
-                          Permissions.WRITE_QUESTION, False),
+            'User': (Permission.WRITE_ANSWER |
+                     Permission.READ_RESULT, True),
+            'DataAdmin': (Permission.WRITE_ANSWER |
+                          Permission.READ_RESULT |
+                          Permission.READ_RESULTS |
+                          Permission.WRITE_QUESTION, False),
             'Administrator': (0xff, False),
         }
         for r in roles:
@@ -195,7 +212,7 @@ class Role(db.Model):
             db.session.commit()
 
 
-class Permissions:
+class Permission:
     WRITE_ANSWER = 0x01 # 答题
     READ_RESULT = 0x02 # 读取个人测试结果
     READ_RESULTS = 0x04 # 读取他人测试结果
@@ -282,7 +299,6 @@ class Test(db.Model):
             mins = divmod(during_time,min)
             return "%d 分,%s"%(int(mins[0]),self.during_to_string(mins[1]))
 
-    @finished.setter
     def finished(self,end_time):
         """设置完成标识"""
         if not self.finished:
@@ -314,16 +330,6 @@ class Chance(db.Model):
     awarded_chances = db.Column(db.Integer,default=0)
     used_chances = db.Column(db.Integer,default=0)
 
-class Share(db.Model):
-    """分享模型"""
-    __tablename__ = 'shares'
-
-    shared_id = db.Column(db.Integer,
-                          db.ForeignKey('users.id'),
-                          primary_key=True)
-    accepted_id = db.Column(db.Integer,
-                            db.ForeignKey('users.id'),
-                            primary_key=True)
 
 
 

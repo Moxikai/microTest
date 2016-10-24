@@ -8,7 +8,8 @@ from flask_migrate import Migrate,MigrateCommand
 from flask_script import Shell,Manager
 
 from app import db,create_app
-from app.models import Answer,Question,User
+from app.models import Answer,Question,User,Share,Chance,Permission,Test,\
+    Role
 
  # 实例化app
 app = create_app(os.environ.get('FLASK_CONFIG') or 'default')
@@ -18,7 +19,10 @@ migrate = Migrate(app,db)
  # 注册shell命令
 def make_shell_context():
     return dict(app=app,db=db,Answer=Answer,\
-                Question=Question,User=User)
+                Question=Question,User=User,\
+                Role=Role,Permissions=Permission,
+                Test=Test,Share=Share,
+                Chance=Chance)
 
 manager.add_command('shell',Shell(make_context=make_shell_context))
 manager.add_command('db',MigrateCommand)

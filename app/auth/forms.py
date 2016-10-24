@@ -1,13 +1,13 @@
 #coding:utf-8
 
-from flask_wtf import FlaskForm
+from flask_wtf import Form
 from wtforms import StringField,PasswordField,BooleanField,SubmitField
 from wtforms.validators import DataRequired,Length,Email,EqualTo,Regexp
 from wtforms import ValidationError
 
 from ..models import User
 
-class LoginForm(FlaskForm):
+class LoginForm(Form):
     """登录表单"""
     email = StringField('Email',validators=[DataRequired(),
                                             Length(1,64),
@@ -16,7 +16,7 @@ class LoginForm(FlaskForm):
     remmember_me = BooleanField('记住我')
     submit = SubmitField('登录')
 
-class RegisterForm(FlaskForm):
+class RegisterForm(Form):
     """注册表单"""
     email = StringField('Email',validators=[DataRequired(),Length(1,64),
                                             Email()])

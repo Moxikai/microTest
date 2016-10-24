@@ -8,21 +8,20 @@ sys.setdefaultencoding('utf-8')
 import time
 
 from flask import redirect,url_for,render_template,request,current_app,flash,session
+from flask_login import login_required
 from .. import db
 from . import main
 from ..forms import AnswerForm,RegisterForm,QuestionForm
-from ..models import Answer,Question,User
-from ..changetime import changeTime
+from ..models import Answer,Question,User,Permission
+from ..decorators import permission_required,admin_required
 
 @main.teardown_request
 def teardown_request(func):
+    """请求结束后关闭数据库连结，解决sae平台连结问题"""
     db.session.close()
 
-@main.route('/hello')
-def index():
-    return 'hello,world!'
-
 @main.route('/',methods=['GET','POST'])
+@login_required
 def welcome():
     """欢迎页，游客首页"""
     form = RegisterForm()
@@ -54,6 +53,7 @@ def welcome():
 
 
 @main.route('/answer/user/<int:user_id>',methods=['GET','POST'])
+@login_required
 def answer(user_id):
     """答题视图"""
     user = User.query.get_or_404(user_id)  # 查询用户
@@ -100,6 +100,8 @@ def answer(user_id):
 
 
 @main.route('/question/add',methods=['GET','POST'])
+@permission_required(Permission.WRITE_QUESTION)
+@login_required
 def question_add():
     """临时视图，新增试题"""
     form = QuestionForm()
@@ -128,6 +130,8 @@ def question_add():
 
 
 @main.route('/question/edit/<int:id>',methods=['GET','POST'])
+@permission_required(Permission.WRITE_QUESTION)
+@login_required
 def question_edit(id):
     """题目修改"""
     question = Question.query.get_or_404(id)
@@ -167,6 +171,8 @@ def question_edit(id):
     return render_template('question_add2.html',form=form)
 
 @main.route('/question',methods=['GET','POST'])
+@permission_required(Permission.WRITE_QUESTION)
+@login_required
 def question():
     """题库题目列表"""
     page = request.args.get('page')
@@ -182,6 +188,8 @@ def question():
                            question_list=question_list)
 
 @main.route('/question/delete/<int:id>')
+@permission_required(Permission.ADMIN)
+@login_required
 def question_delete(id):
     """删除题目"""
     question = Question.query.get_or_404(id)
@@ -193,6 +201,8 @@ def question_delete(id):
 
 
 @main.route('/retest/<int:user_id>')
+@permission_required(Permission.ADMIN)
+@login_required
 def retest(user_id):
     """重新测试，仅用于测试"""
     user = User.query.get_or_404(user_id)
@@ -201,6 +211,7 @@ def retest(user_id):
 
 
 @main.route('/result/<int:user_id>')
+@login_required
 def result(user_id):
     """完成测试"""
     end_time = time.time()
@@ -227,6 +238,8 @@ def result(user_id):
         return redirect(url_for('main.answer',user_id=user_id))
 
 @main.route('/result/<int:user_id>/detail')
+@permission_required(Permission.READ_RESULTS)
+@login_required
 def result_detail(user_id):
     """答案解析"""
     user = User.query.get_or_404(user_id)

@@ -5,3 +5,4 @@ migrations/
 bundle_local.py
 env/
 .DS_Store
+venv/
