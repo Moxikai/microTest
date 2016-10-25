@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block content %}
+    {{ super() }}
+
+    <form class="form" role="form" method="post">
+        <div class="container container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                </div>
+                <div class="col-md-4">
+                    <div>
+                        {{ answer.order_id }}.
+                        {{ answer.question.title }}
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <div class="center-block">
+                        {{ form.hidden_tag() }}
+                        {{ form.answer_choice() }}
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <div class="row navbar-fixed-bottom">
+                        {% if test.is_completed %}
+                            <a href="{{ url_for('main.compelete',test_id=test.id) }}" class="btn btn-success col-xs-4 col-md-4">提交</a>
+                        {% else %}
+                            <input class="btn btn-default col-xs-4 col-md-4 " id="submit" name="submit" type="submit" value="下一题">
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+
+                </div>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}

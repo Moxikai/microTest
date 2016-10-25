@@ -8,22 +8,27 @@
                 <span>
                     <p></p>
                     <ul>
-                         <li>已使用：{{ user.used_chances }} 次</li>
-                         <li>已奖励：{{ user.awarded_chances }} 次</li>
-                         <li>还剩余：{{ user.left_chances }} 次</li>
+                         <li>已使用：{{ user.chance_list[0].used_chances }} 次</li>
+                         <li>已奖励：{{ user.chance_list[0].awarded_chances }} 次</li>
+                         <li>还剩余：{{ user.chance_list[0].left_chances }} 次</li>
                     </ul>
                 </span>
             </div>
-            {% if not test is None %}
+            {% if test %}
                 <div class="row">
                     <div class="col-xs-12">
                         <div class="page-header">
-                            <h3>本次测试成绩</h3>
                         </div>
-                        <ul>
-                            <li>分数：{{ test.show_score }}</li>
-                            <li>时间：{{ test.show_spend_time }}</li>
-                        </ul>
+                        {% if test.show_score < 60 %}
+                            <p>很遗骸，你的测试得分是{{ test.show_score }},用时{{ test.show_spend_time }}</p>
+                            <h5>诈骗第一对象，小心被盯上</h5>
+                        {% elif test.show_score >= 60 and test.show_score < 99 %}
+                            <p>恭喜，你的测试得分是{{ test.show_score }},用时{{ test.show_spend_time }}</p>
+                            <h5>一般手法骗不了你，但是还是得保持警惕</h5>
+                        {% elif test.show_score == 100 %}
+                            <p>哇喔，你满分💯通过，用时{{ test.show_spend_time }}</p>
+                            <h5>老司机，还是你懂的诈骗套路多</h5>
+                        {% endif %}
                     </div>
                 </div>
             {% else %}

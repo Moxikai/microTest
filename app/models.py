@@ -80,9 +80,10 @@ class Answer(db.Model):
         """计算得分"""
         print '当前答案是：----------%s------------当前标准答案是：------------------%s'%(self.answer,self.question.answer_right)
         if self.answer == self.question.answer_right:
-            self.score = self.question.score_right
-        db.session.add(self)
-        db.session.commit()
+            score = self.question.score_right
+        else:
+            score = 0 # 防止数据为空
+        return score
 
 
 class Share(db.Model):
@@ -257,6 +258,20 @@ class User(UserMixin,db.Model):
             order_by(Test.spend_time.asc()).first()
         return result
 
+    @property
+    def use_chance(self):
+        """使用1次机会"""
+        try:
+            chance = Chance.query.filter_by(user_id=self.id).first()
+            chance.used_chances += 1
+            chance.left_chances -= 1
+            db.session.add(chance)
+            db.session.commit()
+            return True
+        except:
+            return False
+
+
 class AnonymousUser(AnonymousUserMixin):
     """定义匿名用户"""
     def can(self,permissions):
@@ -317,6 +332,7 @@ class Test(db.Model):
     user_id = db.Column(db.Integer,db.ForeignKey('users.id')) # 定义外键
     start_time = db.Column(db.Float,index=True) # 开始时间
     end_time = db.Column(db.Float,index=True) # 截止时间
+
     spend_time = db.Column(db.Float,index=True) # 花费时间
     finished = db.Column(db.Boolean,default=False) # 是否完成,默认状态为未完成
     score = db.Column(db.Integer,index=True) # 测试得分
@@ -352,7 +368,11 @@ class Test(db.Model):
             if  not self.score:
                 try:
                     score_list = [answer.score for answer in self.answer_list]
-                    self.score = sum(score_list)
+                    absolut_score = sum(score_list) # 绝对分数
+                    right_score_list = [answer.question.score_right for answer in self.answer_list]
+                    absolute_total_score = sum(right_score_list) # 计算绝对总分
+                    self.score = (float(absolut_score)/absolute_total_score)*100 #转化为float除法
+                    self.score = int(self.score) # 转为整数
                     db.session.add(self)
                     db.session.commit()
                 except:
@@ -369,8 +389,7 @@ class Test(db.Model):
                 self.spend_time = self.end_time - self.start_time
                 db.session.add(self)
                 db.session.commit()
-            show_time = time.strftime('%Y-%m-%d %H:%M:%S',
-                                      time.localtime(self.spend_time))
+            show_time = self.during_to_string(self.spend_time)
             return show_time
         else:
             return -1
@@ -413,6 +432,7 @@ class Test(db.Model):
                 return False
             else:
                 return True
+
 
 class Chance(db.Model):
     """测试资格模型"""

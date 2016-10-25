@@ -39,7 +39,7 @@ def start_test(user_id):
         running_test = Test.query.filter_by(finished=False).first() # 获取测试对象
         if running_test.create_questions():
             """测试题目创建成功"""
-            return redirect(url_for('main.answer',user_id=user_id))
+            return redirect(url_for('main.answer',user_id=user_id,test_id=running_test.id))
         else:
             db.session.delete(running_test)
             db.session.commit() # 删除测试项
@@ -47,36 +47,38 @@ def start_test(user_id):
             return abort(500)
     else:
         flash('挑战机会不足，分享链接可以增加机会哦')
-        return '<h1>管理员，这里转向个人资料页面</h1>'
+        return redirect(url_for('main.result',user_id=user_id))
 
 
-@main.route('/answer/user/<int:user_id>',methods=['GET','POST'])
+@main.route('/test/<int:test_id>',methods=['GET','POST'])
 @login_required
-def answer(user_id):
+def answer(test_id):
     """答题视图"""
-    user = User.query.get_or_404(user_id)  # 查询用户
-    print '进入答题页面,当前用户是----------------%s------------------'%(user.username)
+    test = Test.query.get_or_404(test_id)
+    print '进入答题页面,当前用户是----------------%s------------------'%(test.user.username)
     form = AnswerForm()
     page = request.args.get('page')
     page = int(page) if page else 1
     """处理页码,防止回退修改答案"""
     if ('prev_page' not in session and page == 1) or \
-            ('pre_page' in session and int(session['prev_page']) < page):
+            ('prev_page' in session and int(session['prev_page']) < page):
 
         if request.method == 'POST':
             """处理提交数据"""
             answer = Answer.query.filter(Answer.id==request.form['id']).first()
             answer.answer = request.form['answer_choice']
+            answer.score = answer.calculate_score() # 计算分数
             db.session.add(answer)
             db.session.commit()
             session['prev_page'] = page # 设置前一页码
-            if page < current_app.config['QUESTION_COUNT']:
-                return redirect(url_for('main.answer',page=page+1,user_id=user_id))
+            if page < current_app.config['QUESTIONS_COUNT_PER_TEST']:
+                return redirect(url_for('main.answer',page=page+1,test_id=test_id))
             else:
-                return redirect(url_for('main.result',user_id=user_id)) # 最后一道题目提交后
+                del session['prev_page'] # 清空，防止下次登陆时出错
+                return redirect(url_for('main.compelete',test_id=test_id)) # 最后一道题目提交后
 
         try:
-            obj = Answer.query.filter(Answer.user_id==user_id)
+            obj = Answer.query.filter(Answer.test_id==test_id)
             pagination = obj.order_by(Answer.order_id.asc()).\
                 paginate(page,current_app.config['ANSWERS_PER_PAGE'],False)
             count = obj.count()
@@ -88,9 +90,10 @@ def answer(user_id):
             form.answer_choice.choices = answer.question.transStrToList()
             if answer.answer:
                 form.answer_choice.data = answer.answer
-            return render_template('answer2.html',
-                                   page=page,
-                                   user=user,
+            start_time = time.localtime(test.start_time)
+            return render_template('answer3.html',
+                                   start_time=start_time,
+                                   test=test,
                                    answer=answer,
                                    count=count,
                                    form=form)
@@ -98,7 +101,7 @@ def answer(user_id):
             flash('对不起，内部错误：%s'%e)
             return abort(500)
     else:
-        flash('对不起，不支持返回上一题')
+        flash('对不起，上一页是%s，当前页码是%s，不支持返回到上一页码'%(session['prev_page'],page))
         return abort(403)
 
 
@@ -213,29 +216,36 @@ def retest(user_id):
     return redirect(url_for('main.answer',user_id=user_id))
 
 
-@main.route('/compelete')
+@main.route('/compelete/<int:test_id>')
 @login_required
-def compelete(user_id):
+def compelete(test_id):
     """提交测试"""
-    user = User.query.filter_by(id=user_id).first() # 加载用户
-    running_test = Test.query.filter_by(user_id=user_id).\
-        filter_by(finished=False).first() # 加载当前运行测试
+    running_test = Test.query.get_or_404(test_id)
     if not running_test is None:
         """提交测试"""
-
         running_test.end_time = time.time()
         running_test.finished = True
 
         db.session.add(running_test)
         db.session.commit()
-        """计算分数、时间"""
-        if running_test.show_score != -1 and \
-                        running_test.show_spend_time != -1:
 
-            return '<h1>这里转到结果页面</h1>'
+        """已使用机会+1，剩余机会-1"""
+        if running_test.user.use_chance:
+            """计算分数、时间"""
+            if running_test.show_score != -1 and \
+                            running_test.show_spend_time != -1:
+
+                return redirect(url_for('main.result',
+                                        test_id=test_id,
+                                        user_id=running_test.user.id))
+            else:
+                flash('计算测试分数及时间失败！')
+                return abort(500)
         else:
-            flash('计算测试分数及时间失败！')
+            flash('闯关机会设置失败，请管理员检查数据！')
             return abort(500)
+
+
     else:
         flash('没有正在运行的测试，请管理员检查！')
         return abort(500)

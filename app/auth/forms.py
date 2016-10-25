@@ -13,7 +13,7 @@ class LoginForm(Form):
                                             Length(1,64),
                                             Email()])
     password = PasswordField('password',validators=[DataRequired()])
-    remmember_me = BooleanField('记住我')
+    remmember_me = BooleanField('记住我',default=True)
     submit = SubmitField('登录')
 
 class RegisterForm(Form):

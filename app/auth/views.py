@@ -25,7 +25,8 @@ def login():
                 """不是新注册用户,没有闯关记录"""
                 return redirect(url_for('main.welcome'))
             elif user.is_newUser == 0:
-                return '转到个人结果页面'
+                return redirect(url_for('main.result',user_id=user.id))
+
         flash('账户或者密码错误')
 
     return render_template('auth/login.html',form=form)
