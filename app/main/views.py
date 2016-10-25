@@ -7,7 +7,8 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 import time
 
-from flask import redirect,url_for,render_template,request,current_app,flash,session
+from flask import redirect,url_for,render_template,request,current_app,\
+    flash,session,abort
 from flask_login import login_required
 from .. import db
 from . import main
@@ -33,9 +34,20 @@ def welcome():
 def start_test(user_id):
     """创建随机题目"""
     user = User.query.get_or_404(user_id)
-    test = Test(user_id=user.id)
-    db.session.add(test)
-    db.session.commit()
+    if user.create_test():
+        """测试项创建成功"""
+        running_test = Test.query.filter_by(finished=False).first() # 获取测试对象
+        if running_test.create_questions():
+            """测试题目创建成功"""
+            return redirect(url_for('main.answer',user_id=user_id))
+        else:
+            db.session.delete(running_test)
+            db.session.commit() # 删除测试项
+            flash('未测试题目数量不满足要求，请联系管理员')
+            return abort(500)
+    else:
+        flash('挑战机会不足，分享链接可以增加机会哦')
+        return '<h1>管理员，这里转向个人资料页面</h1>'
 
 
 @main.route('/answer/user/<int:user_id>',methods=['GET','POST'])
@@ -49,7 +61,7 @@ def answer(user_id):
     page = int(page) if page else 1
     """处理页码,防止回退修改答案"""
     if ('prev_page' not in session and page == 1) or \
-            ('pre_page' in session and int(session['prev_page']) <= page):
+            ('pre_page' in session and int(session['prev_page']) < page):
 
         if request.method == 'POST':
             """处理提交数据"""
@@ -64,12 +76,13 @@ def answer(user_id):
                 return redirect(url_for('main.result',user_id=user_id)) # 最后一道题目提交后
 
         try:
-            pagination = Answer.query.filter(Answer.user_id==user_id).order_by(Answer.order_id.asc()).paginate(page,
-                                                                                                               current_app.config['ANSWERS_PER_PAGE'],False)
-
+            obj = Answer.query.filter(Answer.user_id==user_id)
+            pagination = obj.order_by(Answer.order_id.asc()).\
+                paginate(page,current_app.config['ANSWERS_PER_PAGE'],False)
+            count = obj.count()
+            print '本次测试题目:------------------%s个----------------' % (count)
             answer = pagination.items[0]
-            count = Answer.query.filter(Answer.user_id==user_id).count()
-            print '本次测试题目:------------------%s个----------------'%(count)
+
             """初始化部分表单"""
             form.id.data = answer.id
             form.answer_choice.choices = answer.question.transStrToList()
@@ -82,9 +95,11 @@ def answer(user_id):
                                    count=count,
                                    form=form)
         except Exception as e:
-                return '出错了,%s'%e
+            flash('对不起，内部错误：%s'%e)
+            return abort(500)
     else:
-        return '对不起,不允许返回上一题'
+        flash('对不起，不支持返回上一题')
+        return abort(403)
 
 
 @main.route('/question/add',methods=['GET','POST'])
@@ -198,32 +213,41 @@ def retest(user_id):
     return redirect(url_for('main.answer',user_id=user_id))
 
 
+@main.route('/compelete')
+@login_required
+def compelete(user_id):
+    """提交测试"""
+    user = User.query.filter_by(id=user_id).first() # 加载用户
+    running_test = Test.query.filter_by(user_id=user_id).\
+        filter_by(finished=False).first() # 加载当前运行测试
+    if not running_test is None:
+        """提交测试"""
+
+        running_test.end_time = time.time()
+        running_test.finished = True
+
+        db.session.add(running_test)
+        db.session.commit()
+        """计算分数、时间"""
+        if running_test.show_score != -1 and \
+                        running_test.show_spend_time != -1:
+
+            return '<h1>这里转到结果页面</h1>'
+        else:
+            flash('计算测试分数及时间失败！')
+            return abort(500)
+    else:
+        flash('没有正在运行的测试，请管理员检查！')
+        return abort(500)
+
 @main.route('/result/<int:user_id>')
 @login_required
 def result(user_id):
-    """完成测试"""
-    end_time = time.time()
-    user = User.query.filter(User.id==user_id).first()
-    if user.is_completed:
-        user.is_finished = True # 更新完成标记
-        user.end_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(end_time))
-        db.session.add(user)
-        db.session.commit()
+    """查看测试结果"""
 
-        """计算测试时间"""
-        spend_time = user.calculate_spend_time()
-        """计算总得分"""
-        scores = user.calculate_scores()
-        scores_right = user.calculate_scores_right() # 计算标准得分
-        flash('您已成功提交测验，请查看本次测验结果')
-        return  render_template('result.html',
-                                scores=scores,
-                                scores_right=scores_right,
-                                spend_time=spend_time,
-                                user_id=user_id)
-    else:
-        flash('还有题目没有做完，请检查！')
-        return redirect(url_for('main.answer',user_id=user_id))
+
+
+
 
 @main.route('/result/<int:user_id>/detail')
 @permission_required(Permission.READ_RESULTS)

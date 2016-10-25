@@ -40,6 +40,30 @@ class Question(db.Model):
         """单选项列表转换为字符串"""
         return ';'.join('.'.join(item) for item in args)
 
+    @staticmethod
+    def count():
+        """返回整体试题数量"""
+        total = Question.query.count()
+        return total
+
+    @staticmethod
+    def is_meet_Min_count():
+        """是否满足最低数量要求"""
+        if Question.count() < current_app.config['QUESTIONS_COUNT_PER_TEST']:
+            """"""
+            return False
+        else:
+            return True
+
+    @staticmethod
+    def total_set():
+        """返回所有题目对象集合"""
+        total_questions = Question.query.all()
+        return set(total_questions)
+
+
+
+
 class Answer(db.Model):
     """答题"""
     __tablename__ = 'answers'
@@ -147,9 +171,10 @@ class User(UserMixin,db.Model):
 
     def create_test(self):
         """创建测试项目"""
-        if self.has_chance > 0:
+        if self.has_chance:
             """测试机会不为0"""
-            new_test = Test(user_id=self.id)
+            new_test = Test(user_id=self.id,
+                            start_time=time.time())
             db.session.add(new_test)
             db.session.commit()
             return True
@@ -157,16 +182,31 @@ class User(UserMixin,db.Model):
             return False
 
     @property
+    def has_finished_test(self):
+        """检测是否有已完成的测试"""
+        test_list = Test.query.filter_by(user_id=self.id).filter_by(finished=True).all()
+        if test_list:
+            return test_list # 返回已完成的Test对象列表
+        else:
+            return False
+
+
+
+    @property
     def tested_questions(self):
         """获取已测试过的题目,
            返回题目对象列表
         """
-        try:
-            return [answer.question \
-                 for test in self.test_list \
-                 for answer in test.answer_list]
-        except:
-            return [None]
+        if not Question.is_meet_Min_count():
+            return set([-1]) # 不满足最低数量要求
+        finished_test = self.has_finished_test # 获取已完成测试
+        if not finished_test:
+            return set([None]) # 没有已完成的测试
+
+        tested_questions = [answer.question for test in finished_test for answer in test.answer_list]
+        tested_questions = set(tested_questions)
+        return tested_questions
+
 
     def can(self,permissions):
         """验证权限"""
@@ -196,15 +236,11 @@ class User(UserMixin,db.Model):
     @property
     def has_chance(self):
         """判断是否还有挑战机会"""
-        if self.chance_list:
-            chance = self.chance_list[0] # 一对一关系,只有一个对象
-            if chance.left_chances > 1:
-                return True
-            else:
-                return False
+        chance = Chance.query.filter_by(user_id=self.id).first()
+        if chance.left_chances > 0:
+            return chance.left_chances # 挑战机会大于0，返回数量
         else:
-            print '闯关机会实例没有初始化,请管理员注意!'
-            return -1
+            return False
 
     def init_chance(self):
         """初始化闯关机会"""
@@ -279,48 +315,57 @@ class Test(db.Model):
 
     def create_questions(self):
         """创建测试题目"""
-        tested_questions = self.user.tested_questions # 获取已测试题目
-        all_questions = Question.query.all() # 返回题库所有题目
-        tested = set(tested_questions) # 列表转集合
-        all = set(all_questions)
-        selected = random.sample(all - tested,current_app.config['QUESTIONS_COUNT_PER_TEST'])
-        order_id = 1 # 显示题目序号
+        if -1 in self.user.tested_questions:
+            """题库数量不满足要求"""
+            return False
+
+        set_untested_questions = Question.total_set() - \
+                                 self.user.tested_questions # 整体与已完成做差集
+        if len(set_untested_questions) < current_app.config['QUESTIONS_COUNT_PER_TEST']:
+            return False # 未测试题目数量不满足要求
+
+        selected = random.sample(set_untested_questions,
+                                 current_app.config['QUESTIONS_COUNT_PER_TEST']) # 随机选择指定数量
+        order_id = 1 # 初始显示序号
         for question in selected:
-            answer = Answer(
-                test_id = self.id,
-                question_id = question.id,
-                order_id = order_id,
-            )
+            answer = Answer(question_id=question.id,
+                            test_id=self.id,
+                            order_id=order_id)
             db.session.add(answer)
             db.session.commit()
             order_id += 1
+        return True
 
     @property
     def show_score(self):
         """计算分数"""
-        if self.score:
-            """分数已存在,则直接返回"""
+        if self.finished:
+            if  not self.score:
+                try:
+                    score_list = [answer.score for answer in self.answer_list]
+                    self.score = sum(score_list)
+                    db.session.add(self)
+                    db.session.commit()
+                except:
+                    return -1
             return self.score
         else:
-            """不存在,则计算"""
-            try:
-                score_list = [answer.score for answer in self.answer_list]
-                self.score = sum(score_list)
-                db.session.add(self)
-                db.session.commit()
-                return self.score
-            except:
-                """不存在答题记录,则返回0"""
-                return 0
+            return -1
 
     @property
     def show_spend_time(self):
         """计算花费时间"""
-        if not self.spend_time:
-            self.spend_time = self.end_time - self.start_time
-            db.session.add(self)
-            db.session.commit()
-        return self.during_to_string(self.spend_time)
+        if self.finished:
+            if not self.spend_time:
+                self.spend_time = self.end_time - self.start_time
+                db.session.add(self)
+                db.session.commit()
+            show_time = time.strftime('%Y-%m-%d %H:%M:%S',
+                                      time.localtime(self.spend_time))
+            return show_time
+        else:
+            return -1
+
 
 
     def during_to_string(self,during_time):
