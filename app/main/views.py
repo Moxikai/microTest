@@ -12,7 +12,7 @@ from flask_login import login_required
 from .. import db
 from . import main
 from ..forms import AnswerForm,RegisterForm,QuestionForm
-from ..models import Answer,Question,User,Permission
+from ..models import Answer,Question,User,Permission,Test
 from ..decorators import permission_required,admin_required
 
 @main.teardown_request
@@ -20,36 +20,22 @@ def teardown_request(func):
     """请求结束后关闭数据库连结，解决sae平台连结问题"""
     db.session.close()
 
-@main.route('/',methods=['GET','POST'])
+@main.route('/welcome',methods=['GET','POST'])
 @login_required
 def welcome():
     """欢迎页，游客首页"""
-    form = RegisterForm()
-    if form.validate_on_submit():
-        """处理post数据"""
-        user = User.query.get_or_404(session['user_id'])
-        print '查询到已存在的账户名称是：-------------------%s--------%s----------'%(user.username,user.id)
-        user.username = form.username.data # 替换用户名
-        user.start_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) # 登记开始时间
-        db.session.add(user)
-        db.session.commit()
 
-        flash('登记成功，马上转到测试')
+    return render_template('welcome.html')
 
-        return redirect(url_for('main.answer',user_id=user.id))
 
-    username = User.randomUserName()  # 随机整数签名后的字符串，防止重复
-    new_user = User(username=username)
-    db.session.add(new_user)
+@main.route('/create_questions/<int:user_id>')
+@login_required
+def start_test(user_id):
+    """创建随机题目"""
+    user = User.query.get_or_404(user_id)
+    test = Test(user_id=user.id)
+    db.session.add(test)
     db.session.commit()
-
-     # sae要求
-    try:
-        session['user_id'] = new_user.id  # 通过session会话保存临时用户的id
-    except:
-        return 'session is wrong'
-
-    return render_template('welcome.html',form=form)
 
 
 @main.route('/answer/user/<int:user_id>',methods=['GET','POST'])
@@ -61,42 +47,44 @@ def answer(user_id):
     form = AnswerForm()
     page = request.args.get('page')
     page = int(page) if page else 1
+    """处理页码,防止回退修改答案"""
+    if ('prev_page' not in session and page == 1) or \
+            ('pre_page' in session and int(session['prev_page']) <= page):
 
-    if request.method == 'POST':
-        """处理提交数据"""
-        answer = Answer.query.filter(Answer.id==request.form['id']).first()
-        answer.answer = request.form['answer_choice']
-        db.session.add(answer)
-        db.session.commit() # sae要求
-        if page < current_app.config['QUESTION_COUNT']:
-            return redirect(url_for('main.answer',page=page+1,user_id=user_id))
-        else:
-            return redirect(url_for('main.answer',page=page,user_id=user_id))
+        if request.method == 'POST':
+            """处理提交数据"""
+            answer = Answer.query.filter(Answer.id==request.form['id']).first()
+            answer.answer = request.form['answer_choice']
+            db.session.add(answer)
+            db.session.commit()
+            session['prev_page'] = page # 设置前一页码
+            if page < current_app.config['QUESTION_COUNT']:
+                return redirect(url_for('main.answer',page=page+1,user_id=user_id))
+            else:
+                return redirect(url_for('main.result',user_id=user_id)) # 最后一道题目提交后
 
-    if not user.answer_list:
-        print '当前用户-------%s---------不能存在答题记录,稍后创建答题'%(user.username)
-        user.createQuestions() # 不存在答题记录,则创建随机记录
+        try:
+            pagination = Answer.query.filter(Answer.user_id==user_id).order_by(Answer.order_id.asc()).paginate(page,
+                                                                                                               current_app.config['ANSWERS_PER_PAGE'],False)
 
-    try:
-        pagination = Answer.query.filter(Answer.user_id==user_id).order_by(Answer.order_id.asc()).paginate(page,
-                                                                                                           current_app.config['ANSWERS_PER_PAGE'],False)
-        #answer_list = Answer.query.filter(Answer.user_id == user_id).order_by(Answer.order_id.asc()).all()
-        answer = pagination.items[0]
-        count = Answer.query.filter(Answer.user_id==user_id).count()
-        print '本次测试题目:------------------%s个----------------'%(count)
-        """初始化部分表单"""
-        form.id.data = answer.id
-        form.answer_choice.choices = answer.question.transStrToList()
-        if answer.answer:
-            form.answer_choice.data = answer.answer
-        return render_template('answer2.html',
-                               page=page,
-                               user=user,
-                               answer=answer,
-                               count=count,
-                               form=form)
-    except Exception as e:
-            return '出错了,%s'%e
+            answer = pagination.items[0]
+            count = Answer.query.filter(Answer.user_id==user_id).count()
+            print '本次测试题目:------------------%s个----------------'%(count)
+            """初始化部分表单"""
+            form.id.data = answer.id
+            form.answer_choice.choices = answer.question.transStrToList()
+            if answer.answer:
+                form.answer_choice.data = answer.answer
+            return render_template('answer2.html',
+                                   page=page,
+                                   user=user,
+                                   answer=answer,
+                                   count=count,
+                                   form=form)
+        except Exception as e:
+                return '出错了,%s'%e
+    else:
+        return '对不起,不允许返回上一题'
 
 
 @main.route('/question/add',methods=['GET','POST'])

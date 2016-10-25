@@ -17,7 +17,15 @@ def login():
         if user is not None and \
                 user.verify_password(form.password.data):
             login_user(user,form.remmember_me.data)
-            return redirect(request.args.get('next') or url_for('main.welcome'))
+            if user.is_newUser == 1:
+                """新注册用户"""
+                user.init_chance() # 初始化闯关机会,默认1次
+                return redirect(url_for('main.welcome')) # 转到欢迎页面
+            elif user.is_newUser == -1:
+                """不是新注册用户,没有闯关记录"""
+                return redirect(url_for('main.welcome'))
+            elif user.is_newUser == 0:
+                return '转到个人结果页面'
         flash('账户或者密码错误')
 
     return render_template('auth/login.html',form=form)

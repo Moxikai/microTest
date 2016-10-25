@@ -100,6 +100,16 @@ class User(UserMixin,db.Model):
                               backref=db.backref('accepter',lazy='joined'),
                               lazy='dynamic',
                               cascade='all,delete-orphan')
+    chance_list = db.relationship('Chance',backref='user') # 定义反向关系
+
+    def __init__(self,**kwargs):
+        """初始化方法,定义默认角色"""
+        super(User,self).__init__(**kwargs)
+        if self.role is None:
+            if self.email == current_app.config['ADMINISTRATOR_MAIL']:
+                self.role = Role.query.filter_by(permissions=0xff).first() # 定义管理员
+            else:
+                self.role = Role.query.filter_by(default=True).first() # 定义普通用户
 
 
     @property
@@ -134,19 +144,15 @@ class User(UserMixin,db.Model):
         else:
             """微信验证模式下,获取用户基本信息"""
             pass
-    @property
-    def chance(self):
-        """检测剩余次数"""
-        return 1
-
 
     def create_test(self):
         """创建测试项目"""
-        if self.chance > 0:
+        if self.has_chance > 0:
             """测试机会不为0"""
             new_test = Test(user_id=self.id)
             db.session.add(new_test)
             db.session.commit()
+            return True
         else:
             return False
 
@@ -169,7 +175,42 @@ class User(UserMixin,db.Model):
 
     def is_administrator(self):
         """验证管理员权限"""
-        return self.can(Permissions.ADMIN)
+        return self.can(Permission.ADMIN)
+
+    @property
+    def is_newUser(self):
+        """判断是否新用户
+        1、没有机会记录,新注册用户;
+        2、有机会记录,没有闯关记录,新用户;
+        3、有机会记录且有闯关记录,老用户
+        """
+        test = Test.query.filter_by(user_id=self.id).first()
+        chance = Chance.query.filter_by(user_id=self.id).first()
+        if chance is None:
+            return 1
+        elif not chance is None and test is None:
+            return -1
+        elif not chance is None and not test is None:
+            return 0
+
+    @property
+    def has_chance(self):
+        """判断是否还有挑战机会"""
+        if self.chance_list:
+            chance = self.chance_list[0] # 一对一关系,只有一个对象
+            if chance.left_chances > 1:
+                return True
+            else:
+                return False
+        else:
+            print '闯关机会实例没有初始化,请管理员注意!'
+            return -1
+
+    def init_chance(self):
+        """初始化闯关机会"""
+        chance = Chance(user_id = self.id)
+        db.session.add(chance)
+        db.session.commit()
 
 class AnonymousUser(AnonymousUserMixin):
     """定义匿名用户"""
@@ -299,7 +340,7 @@ class Test(db.Model):
             mins = divmod(during_time,min)
             return "%d 分,%s"%(int(mins[0]),self.during_to_string(mins[1]))
 
-    def finished(self,end_time):
+    def set_finish(self,end_time):
         """设置完成标识"""
         if not self.finished:
             self.finished = True
@@ -325,7 +366,7 @@ class Chance(db.Model):
 
     id = db.Column(db.Integer,primary_key=True)
     user_id = db.Column(db.Integer,db.ForeignKey('users.id'))
-    left_chances = db.Column(db.Integer) # 当前测试资格
+    left_chances = db.Column(db.Integer,default=1) # 当前测试资格
     start_chances = db.Column(db.Integer,default=1)
     awarded_chances = db.Column(db.Integer,default=0)
     used_chances = db.Column(db.Integer,default=0)

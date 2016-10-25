@@ -7,7 +7,7 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h1>你会轻易被骗吗？</h1>
+                <h2>你会轻易被骗吗？</h2>
                 <p>来菲凡烽火台挑战一下！</p>
             </div>
         </div>
@@ -17,14 +17,14 @@
         </div>
         <div class="row">
             <div class="btn btn-large btn-warning col-xs-4 col-xs-push-4 ">
-                <a href="#">开始</a>
+                <a href="{{ url_for('main.start_test',user_id=current_user.id) }}">开始</a>
             </div>
         </div>
         <div class="row">
             <div class="col-xs-12">
                 <h5>规则如下：</h5>
                 <ul>
-                    <li>随机抽取10道题目,完成后提交</li>
+                    <li>系统随机抽取10道题目,完成后提交</li>
                     <li>满分即可获得50元话费</li>
                     <li>按照完成时间从低到高，月度排名前3可获得100元话费</li>
                     <li>每个微信号限1次闯关机会，每邀请1个朋友增加1次机会</li>
