@@ -4,30 +4,45 @@
     {{ super() }}
     <div class="container">
         <div class="row">
-            <div class="col-sm-6">
-                <p>本次测验结果</p>
-                <ul>
-                    <li>
-                        <p>本次耗时：{{ spend_time }}</p>
-                    </li>
-                    <li>
-                        <p>总得分：{{ scores }}</p>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('main.result_detail',user_id=user_id) }}">
-                            <strong>查看答案解析</strong>
-                        </a>
-                    </li>
-                </ul>
-
-                {% if scores/scores_right > 0.95 %}
-                    <p>大牛🐮，请手下我的膝盖！</p>
-                {% elif scores/scores_right > 0.6 %}
-                    <p>恭喜你，及格了</p>
-                {% else %}
-                    <p>少年，妈妈怎么放心让你一个人出门</p>
-                {% endif %}
-
+            <div class="col-xs-12">
+                <span>
+                    <p></p>
+                    <ul>
+                         <li>已使用：{{ user.used_chances }} 次</li>
+                         <li>已奖励：{{ user.awarded_chances }} 次</li>
+                         <li>还剩余：{{ user.left_chances }} 次</li>
+                    </ul>
+                </span>
+            </div>
+            {% if not test is None %}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="page-header">
+                            <h3>本次测试成绩</h3>
+                        </div>
+                        <ul>
+                            <li>分数：{{ test.show_score }}</li>
+                            <li>时间：{{ test.show_spend_time }}</li>
+                        </ul>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="page-header">
+                            <h3>历史最佳成绩</h3>
+                        </div>
+                        <ul>
+                            <li>分数：{{ user.best_result.show_score }}</li>
+                            <li>时间：{{ user.best_result.show_spend_time }}</li>
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="row">
+                <div class="btn btn-large btn-success col-xs-4 col-xs-push-4">
+                    <a href="#">分享链接</a>
+                </div>
             </div>
         </div>
     </div>

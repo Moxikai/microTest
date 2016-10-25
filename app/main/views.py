@@ -244,9 +244,13 @@ def compelete(user_id):
 @login_required
 def result(user_id):
     """查看测试结果"""
-
-
-
+    user = User.query.get_or_404(user_id)
+    test_id = request.args.get('test_id')
+    if test_id:
+        test = Test.query.get_or_404(int(test_id))
+        return render_template('result.html',user=user,test=test)
+    else:
+        return render_template('result.html',user=user,test=None)
 
 
 @main.route('/result/<int:user_id>/detail')

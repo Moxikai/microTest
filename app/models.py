@@ -248,6 +248,15 @@ class User(UserMixin,db.Model):
         db.session.add(chance)
         db.session.commit()
 
+    @property
+    def best_result(self):
+        """计算最好的闯关结果
+        按照分数由高到低，时间由低到高
+        """
+        result = Test.query.order_by(Test.score.desc()).\
+            order_by(Test.spend_time.asc()).first()
+        return result
+
 class AnonymousUser(AnonymousUserMixin):
     """定义匿名用户"""
     def can(self,permissions):
