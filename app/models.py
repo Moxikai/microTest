@@ -108,6 +108,8 @@ class User(UserMixin,db.Model):
     nick_name = db.Column(db.String,index=True) # 微信昵称
     username = db.Column(db.String(128),index=True) # 用户名,用于密码登录方案
     email = db.Column(db.String(128),index=True) # 电子邮件,用于密码登录方案
+    phone = db.Column(db.String(11),index=True) #  手机号码
+    weixin = db.Column(db.String(16),index=True) # 微信号码
     password_hash = db.Column(db.String(128)) # 密码签名,用于密码登录方案
     sex = db.Column(db.String(32),index=True) # 性别
     city = db.Column(db.String(32),index=True) # 城市

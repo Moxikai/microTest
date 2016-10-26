@@ -21,7 +21,7 @@ def teardown_request(func):
     """请求结束后关闭数据库连结，解决sae平台连结问题"""
     db.session.close()
 
-@main.route('/welcome',methods=['GET','POST'])
+@main.route('/',methods=['GET','POST'])
 @login_required
 def welcome():
     """欢迎页，游客首页"""
