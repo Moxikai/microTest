@@ -3,7 +3,7 @@
 配置项目
 """
 import os
-from sae.const import MYSQL_USER,MYSQL_PASS,MYSQL_HOST,MYSQL_PORT,MYSQL_DB
+#from sae.const import MYSQL_USER,MYSQL_PASS,MYSQL_HOST,MYSQL_PORT,MYSQL_DB
 
 base_dir = os.path.dirname(__file__)
 class Config():
@@ -29,15 +29,15 @@ class DevelopingConfig(Config):
 
 class ProductionConfig(Config):
     """生产配置"""
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///%s'%(os.path.join(base_dir,'pro.db')) or \
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////PyProject/microTest/data.db' or \
         os.path.get('SQLALCHEMY_DATABASE_URI')
-
+"""
 class SaeProductionConfig(Config):
-    """新浪SAE配置"""
+    
     SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s' \
     %(MYSQL_USER,MYSQL_PASS,
       MYSQL_HOST,int(MYSQL_PORT),MYSQL_DB)
-
+"""
 class SaeDevelopingConfig(Config):
     """测试本地mysql数据库"""
     SQLALCHEMY_DATABASE_URI = 'mysql://root:zhu098123@localhost:3306/app_microtest'
@@ -46,7 +46,7 @@ class SaeDevelopingConfig(Config):
 config = {
     'developing':DevelopingConfig,
     'production':ProductionConfig,
-    'sae':SaeProductionConfig,
+ #   'sae':SaeProductionConfig,
     'sae_test':SaeDevelopingConfig,
     'default':DevelopingConfig,
 
