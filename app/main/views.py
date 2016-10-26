@@ -39,9 +39,10 @@ def index():
 def welcome_test():
     """公测欢迎视图"""
     form = CheckinForm()
-    if form.validate_on_submit():
+    if request.method == 'POST':
         """处理提交数据"""
-        username = form.username.data
+        print '接收到POST数据'
+        username = request.form.get('username')
         user = User.query.filter_by(username=username).first()
         if user and user.login_status == False:
             """用户名存在且没有被占用"""
@@ -52,7 +53,7 @@ def welcome_test():
             user.init_chance() # 设置闯关机会
             return redirect(url_for('main.start_test',user_id=user.id))
         elif user and user.login_status == True:
-            flash('用户名：%s已被占用，请更换一个登记！')
+            flash('用户名：%s已被占用，请更换一个登记!'%(user.username))
             return redirect(url_for('main.welcome_test'))
         else:
             """用户名不存在"""
@@ -112,7 +113,7 @@ def answer(test_id):
     """处理页码,防止回退修改答案"""
     if ('prev_page' not in session and page == 1) or \
             ('prev_page' in session and int(session['prev_page']) < page) or \
-            test.user.can(Permission.ADMIN):
+            current_app.config['CHEACK_PREV_PAGE'] == False:
 
         if request.method == 'POST':
             """处理提交数据"""

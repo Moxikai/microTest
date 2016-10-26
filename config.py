@@ -28,7 +28,7 @@ class DevelopingConfig(Config):
                               os.environ.get('SQLALCHEMY_DATABASE_URI')
     DEPLOY_MODE = 'test' # 测试模式（test,public_test），密码验证模式（password）,微信验证模式（weixin）
     CHANCE_DEFAULT_COUNT = 5 # 初始闯关机会
-    CHEACK_PRE_PAGE = False # 是否检查翻页动作
+    CHEACK_PREV_PAGE = False # 是否检查翻页动作
     DEFAULT_PASSWORD = '888888'
 
 class TestConfig(Config):
@@ -37,7 +37,7 @@ class TestConfig(Config):
                               os.path.get('SQLALCHEMY_DATABASE_URI')
     DEPLOY_MODE = 'public_test'
     CHANCE_DEFAULT_COUNT = 5  # 初始闯关机会
-    CHEACK_PRE_PAGE = False  # 是否检查翻页动作
+    CHEACK_PREV_PAGE = False  # 是否检查翻页动作
     DEFAULT_PASSWORD = '888888'
 
 class ProductionConfig(Config):
