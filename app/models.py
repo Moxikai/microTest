@@ -5,10 +5,11 @@
 import random,hashlib,math,time,datetime
 
 from werkzeug.security import generate_password_hash,check_password_hash
-from flask import current_app
+from flask import current_app,jsonify
 from flask_login import UserMixin,AnonymousUserMixin
 
 from app import db
+from app.exceptions import ValidationError
 from . import login_manager
 
 @login_manager.user_loader
@@ -60,6 +61,39 @@ class Question(db.Model):
         """返回所有题目对象集合"""
         total_questions = Question.query.all()
         return set(total_questions)
+
+    def to_json(self):
+        """转化为json序列化词典"""
+        json_post ={
+            'title':self.title,
+            'choices':self.choices,
+            'score_right':self.score_right,
+            'answer_right':self.answer_right,
+            'answer_description':self.answer_description
+        }
+        return json_post
+
+    @staticmethod
+    def from_json(json_post):
+        """从json数据创建记录"""
+        title = json_post.get('title')
+        choices = json_post.get('choices')
+        score_right = json_post.get('score_right')
+        answer_right = json_post.get('answer_right')
+        answer_description = json_post.get('answer_description')
+        if (title is None or title == ' ') or \
+                (choices is None or choices == ' ') or \
+                (score_right is None or score_right == ' ') or \
+                (answer_right is None or answer_right == ' ') or \
+                (answer_description is None or answer_description == ' '):
+            raise ValidationError('questions表字段不能为空')
+
+        return Question(title=title,
+                        choices=choices,
+                        score_right=score_right,
+                        answer_right=answer_right,
+                        answer_description=answer_description,
+                        )
 
 
 
