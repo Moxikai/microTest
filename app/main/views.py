@@ -9,10 +9,10 @@ import time
 
 from flask import redirect,url_for,render_template,request,current_app,\
     flash,session,abort
-from flask_login import login_required
+from flask_login import login_required,login_user
 from .. import db
 from . import main
-from ..forms import AnswerForm,RegisterForm,QuestionForm
+from ..forms import AnswerForm,QuestionForm,CheckinForm
 from ..models import Answer,Question,User,Permission,Test
 from ..decorators import permission_required,admin_required
 
@@ -21,7 +21,57 @@ def teardown_request(func):
     """请求结束后关闭数据库连结，解决sae平台连结问题"""
     db.session.close()
 
-@main.route('/',methods=['GET','POST'])
+
+@main.route('/')
+def index():
+    """首页
+    1、根据不同模式，跳转到不同视图
+    """
+    deploy_mode = current_app.config.get('DEPLOY_MODE',None)
+    if deploy_mode == 'public_test' or 'test':
+        """测试模式"""
+        flash('开启公测模式，初始闯关次数5，默认密码888888')
+        return redirect(url_for('main.welcome_test'))
+    else:
+        pass
+
+@main.route('/welcome_test',methods=['GET','POST'])
+def welcome_test():
+    """公测欢迎视图"""
+    form = CheckinForm()
+    if form.validate_on_submit():
+        """处理提交数据"""
+        username = form.username.data
+        user = User.query.filter_by(username=username).first()
+        if user and user.login_status == False:
+            """用户名存在且没有被占用"""
+            user.login_status = True
+            db.session.add(user)
+            db.session.commit()
+            login_user(user)
+            user.init_chance() # 设置闯关机会
+            return redirect(url_for('main.start_test',user_id=user.id))
+        elif user and user.login_status == True:
+            flash('用户名：%s已被占用，请更换一个登记！')
+            return redirect(url_for('main.welcome_test'))
+        else:
+            """用户名不存在"""
+            user = User(username=username,
+                        password=current_app.config['DEFAULT_PASSWORD'],
+                        login_status=True)
+
+            db.session.add(user)
+            db.session.commit()
+            login_user(user)
+            user.init_chance() # 设置闯关机会
+            return redirect(url_for('main.start_test',user_id=user.id))
+
+
+
+
+    return render_template('welcome_test.html',form=form)
+
+@main.route('/welcome',methods=['GET','POST'])
 @login_required
 def welcome():
     """欢迎页，游客首页"""
