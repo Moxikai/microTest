@@ -13,9 +13,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-xs-12 col-sm-4 col-sm-push-4">
-                    <br>
-                        <h4>{{ answer.order_id }}.
-                        {{ answer.question.title }}</h4>
+                        <p class="lead">{{ answer.order_id }}.&nbsp{{ answer.question.title }}</p>
                 </div>
             </div>
 
@@ -36,7 +34,7 @@
                     {% if test.is_completed %}
                         <a href="{{ url_for('main.compelete',test_id=test.id) }}" class="btn btn-success">提交</a>
                     {% else %}
-                        <input class="btn btn-default" id="submit" name="submit" type="submit" value="下一题">
+                        <input class="btn btn-default" id="submit" name="submit" type="submit" value="提交">
                     {% endif %}
                 </div>
             </div>
