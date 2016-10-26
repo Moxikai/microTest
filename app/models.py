@@ -485,10 +485,16 @@ class Chance(db.Model):
 
     id = db.Column(db.Integer,primary_key=True)
     user_id = db.Column(db.Integer,db.ForeignKey('users.id'))
-    left_chances = db.Column(db.Integer,default=1) # 当前测试资格
-    start_chances = db.Column(db.Integer,default=1)
+    left_chances = db.Column(db.Integer) # 当前测试资格
+    start_chances = db.Column(db.Integer)
     awarded_chances = db.Column(db.Integer,default=0)
     used_chances = db.Column(db.Integer,default=0)
+
+    # 初始化
+    def __init__(self,**kwargs):
+        super(Chance,self).__init__(**kwargs)
+        self.start_chances = current_app.config['CHANCE_DEFAULT_COUNT']
+        self.left_chances = self.start_chances
 
 
 

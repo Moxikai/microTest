@@ -26,18 +26,14 @@ class DevelopingConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///%s'%(os.path.join(base_dir,'dev.db')) or \
                               os.environ.get('SQLALCHEMY_DATABASE_URI')
+    CHANCE_DEFAULT_COUNT = 5 # 闯关机会
 
 class ProductionConfig(Config):
     """生产配置"""
     SQLALCHEMY_DATABASE_URI = 'sqlite:////PyProject/microTest/data.db' or \
         os.path.get('SQLALCHEMY_DATABASE_URI')
-"""
-class SaeProductionConfig(Config):
-    
-    SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s' \
-    %(MYSQL_USER,MYSQL_PASS,
-      MYSQL_HOST,int(MYSQL_PORT),MYSQL_DB)
-"""
+    CHANCE_DEFAULT_COUNT = 1  # 闯关机会，初始设置1
+
 class SaeDevelopingConfig(Config):
     """测试本地mysql数据库"""
     SQLALCHEMY_DATABASE_URI = 'mysql://root:zhu098123@localhost:3306/app_microtest'
