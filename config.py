@@ -18,7 +18,7 @@ class Config():
     QUESTIONS_PER_PAGE = 10 # 每页显示题目数量(题库管理界面)
     LOGIN_MODE = 0 # 登录模式,0为输入昵称,普通登录;1为从微信验证
     ADMINISTRATOR_MAIL = 'zhu-hero@qq.com'
-    DATA_ADMIN_MAIL = 'yuliang.zh@foxmail.com'
+    DATA_ADMIN_MAIL = '280004298@qq.com'
 
 
 class DevelopingConfig(Config):

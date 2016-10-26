@@ -4,7 +4,7 @@ from flask import render_template,redirect,request,url_for,flash
 from flask_login import login_user,login_required,logout_user
 
 from . import auth
-from ..models import User
+from ..models import User,Role
 from .forms import LoginForm,RegisterForm
 from .. import db
 
@@ -17,18 +17,23 @@ def login():
         if user is not None and \
                 user.verify_password(form.password.data):
             login_user(user,form.remmember_me.data)
-            if user.is_newUser == 1:
-                """新注册用户"""
-                user.init_chance() # 初始化闯关机会,默认1次
-                return redirect(url_for('main.welcome')) # 转到欢迎页面
-            elif user.is_newUser == -1:
-                """不是新注册用户,没有闯关记录"""
+
+            if user.role.role_name == 'DataAdmin':
+                return redirect(url_for('main.question'))  # 数据管理员转到题库页面
+            elif user.role.role_name == 'User':
+                # 普通用户
+                if user.is_newUser:
+                    # 第一次注册用户
+                    user.init_chance()  # 初始化闯关机会,默认1次
+                    return redirect(url_for('main.welcome'))  # 转到欢迎页面
+                elif user.is_newUser == -1:
+                    # 已初始化，但是未参与测试
+                    return redirect(url_for('main.welcome'))
+                elif user.is_newUser == 0:
+                    return redirect(url_for('main.result', user_id=user.id))
+            else:
                 return redirect(url_for('main.welcome'))
-            elif user.is_newUser == 0:
-                return redirect(url_for('main.result',user_id=user.id))
-
         flash('账户或者密码错误')
-
     return render_template('auth/login.html',form=form)
 
 

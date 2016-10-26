@@ -169,6 +169,12 @@ class User(UserMixin,db.Model):
         if self.role is None:
             if self.email == current_app.config['ADMINISTRATOR_MAIL']:
                 self.role = Role.query.filter_by(permissions=0xff).first() # 定义管理员
+            elif self.email == current_app.config['DATA_ADMIN_MAIL']:
+                """"""
+                self.role = Role.query.filter_by(permissions=Permission.WRITE_ANSWER | \
+                                                             Permission.READ_RESULT | \
+                                                             Permission.READ_RESULTS | \
+                                                             Permission.WRITE_QUESTION).first() # 定义数据管理员
             else:
                 self.role = Role.query.filter_by(default=True).first() # 定义普通用户
 
@@ -253,6 +259,9 @@ class User(UserMixin,db.Model):
     def is_administrator(self):
         """验证管理员权限"""
         return self.can(Permission.ADMIN)
+    def is_data_admin(self):
+        """验证数据管理员权限"""
+        return self.can(Permission.WRITE_QUESTION)
 
     @property
     def is_newUser(self):
