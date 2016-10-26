@@ -1,6 +1,12 @@
 {% extends "bootstrap/base.html" %}
 
 {% block title %} 烽火台 {% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="shortcut icon" href="{{ url_for('static',filename='favicon.ico') }}" type="image/x-icon" sizes="any">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon" sizes="any">
+
+{% endblock %}
 
 {% block navbar %}
     <div class="navbar navbar-inverse" role="navigation">

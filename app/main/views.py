@@ -61,7 +61,8 @@ def answer(test_id):
     page = int(page) if page else 1
     """处理页码,防止回退修改答案"""
     if ('prev_page' not in session and page == 1) or \
-            ('prev_page' in session and int(session['prev_page']) < page):
+            ('prev_page' in session and int(session['prev_page']) < page) or \
+            test.user.can(Permission.ADMIN):
 
         if request.method == 'POST':
             """处理提交数据"""
