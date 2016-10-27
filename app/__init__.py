@@ -34,6 +34,9 @@ def create_app(config_name):
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint,url_prefix = '/auth')
     from .api_0_1_0 import api as api_0_1_0_blueprint
-    app.register_blueprint(api_0_1_0_blueprint,url_frefix='/api/v0.1')
+    app.register_blueprint(api_0_1_0_blueprint,url_prefix='/api/v0.1')
+    # 注册微信蓝本
+    from .weixin import weixin as weixin_blueprint
+    app.register_blueprint(weixin_blueprint,url_prefix='/weixin')
 
     return app

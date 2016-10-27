@@ -19,6 +19,7 @@ class Config():
     LOGIN_MODE = 0 # 登录模式,0为输入昵称,普通登录;1为从微信验证
     ADMINISTRATOR_MAIL = 'zhu-hero@qq.com'
     DATA_ADMIN_MAIL = '280004298@qq.com'
+    WEIXIN_TOKEN = 'feifandata'
 
 
 class DevelopingConfig(Config):
