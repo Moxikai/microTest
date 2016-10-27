@@ -23,22 +23,15 @@ class Config():
 
 class DevelopingConfig(Config):
     """开发配置"""
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///%s'%(os.path.join(base_dir,'dev.db')) or \
-                              os.environ.get('SQLALCHEMY_DATABASE_URI')
-    DEPLOY_MODE = 'test' # 测试模式（test,public_test），密码验证模式（password）,微信验证模式（weixin）
-    CHANCE_DEFAULT_COUNT = 5 # 初始闯关机会
-    CHEACK_PREV_PAGE = False # 是否检查翻页动作
-    DEFAULT_PASSWORD = '888888'
-
-class TestConfig(Config):
     """服务器测试模式"""
+    DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:////PyProject/microTest/data.db' or \
-                              os.path.get('SQLALCHEMY_DATABASE_URI')
+                              'sqlite:///%s' % (os.path.join(base_dir, 'dev.db'))
     DEPLOY_MODE = 'public_test'
     CHANCE_DEFAULT_COUNT = 5  # 初始闯关机会
     CHEACK_PREV_PAGE = False  # 是否检查翻页动作
     DEFAULT_PASSWORD = '888888'
+
 
 class ProductionConfig(Config):
     """生产配置"""
@@ -54,10 +47,8 @@ class SaeDevelopingConfig(Config):
 config = {
     'developing':DevelopingConfig,
     'production':ProductionConfig,
- #   'sae':SaeProductionConfig,
     'sae_test':SaeDevelopingConfig,
     'default':DevelopingConfig,
-    'public_test':TestConfig,
 }
 
 
