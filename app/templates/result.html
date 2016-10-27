@@ -48,7 +48,10 @@
                 </div>
             {% endif %}
             <div class="row">
-                <div class="btn btn-success col-xs-2 col-xs-push-5">
+                <div class="btn btn-danger col-xs-2 col-xs-push-4">
+                    <a href="{{ url_for('main.start_test',user_id=current_user.id) }}">重试</a>
+                </div>
+                <div class="btn btn-success col-xs-2 col-xs-push-4">
                     <a href="#">分享</a>
                 </div>
             </div>

@@ -13,7 +13,7 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 10 # 连接池间隔时间
     #SQLALCHEMY_ECHO = True
-    QUESTIONS_COUNT_PER_TEST = 4 # 每次测试题目总数
+
     ANSWERS_PER_PAGE = 1
     QUESTIONS_PER_PAGE = 10 # 每页显示题目数量(题库管理界面)
     LOGIN_MODE = 0 # 登录模式,0为输入昵称,普通登录;1为从微信验证
@@ -25,8 +25,10 @@ class DevelopingConfig(Config):
     """开发配置"""
     """服务器测试模式"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////PyProject/microTest/data.db' or \
-                              'sqlite:///%s' % (os.path.join(base_dir, 'dev.db'))
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///%s' % (os.path.join(base_dir, 'dev.db')) or \
+    'sqlite:////PyProject/microTest/data.db'
+
+    QUESTIONS_COUNT_PER_TEST = 2  # 每次测试题目总数
     DEPLOY_MODE = 'public_test'
     CHANCE_DEFAULT_COUNT = 5  # 初始闯关机会
     CHEACK_PREV_PAGE = False  # 是否检查翻页动作
