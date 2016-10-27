@@ -6,7 +6,7 @@
     {{ super() }}
     <div class="container">
         <div class="row">
-            <div class="col-md-4 col-md-push-4">
+            <div class="col-sm-8 col-sm-push-2 col-md-8 col-md-push-2 col-lg-4">
                 <div class="page-header">
                     <h3>你会轻易被骗吗？</h3>
                     <p>来菲凡烽火台挑战一下！</p>
@@ -15,13 +15,21 @@
         </div>
 
         <div class="row">
-            <div class="col-xs-4 col-xs-push-4 ">
-                <a href="{{ url_for('main.start_test',user_id=current_user.id) }}" class="btn btn-danger btn-small">开始</a>
+            <div class="col-xs-12 col-sm-8 col-sm-push-2 col-md-8 col-md-push-2 col-lg-4">
+                <form class="navbar-form" role="form" onsubmit="" method="post">
+                    <div class="form-group col-xs-8 col-sm-5 col-md-8 col-lg-8">
+                        {{ form.username(class="form-control",placeholder="字母或数字组成的昵称") }}
+                    </div>
+                    <div class="form-group col-xs-4 col-sm-2 col-sm-push-2 col-md-2 col-md-push-2 col-lg-4">
+                        {{ form.submit(class="form-control btn btn-default") }}
+                    </div>
+            </form>
             </div>
+
         </div>
         <br>
         <div class="row">
-            <div class="col-md-4 col-md-push-4">
+            <div class="col-sm-8 col-sm-push-2 col-md-8 col-md-push-2 col-lg-4">
                 <h5>规则如下：</h5>
                 <ul>
                     <li>系统随机抽取10道题目,完成后提交</li>

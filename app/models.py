@@ -148,6 +148,7 @@ class User(UserMixin,db.Model):
     sex = db.Column(db.String(32),index=True) # 性别
     city = db.Column(db.String(32),index=True) # 城市
     province = db.Column(db.String(32),index=True) # 省
+    login_status = db.Column(db.Boolean,default=False) # 登陆状态，默认未登陆
     test_list = db.relationship('Test',backref='user') # 定义反向关系
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
     """分享和接受的自引用关系"""
@@ -290,9 +291,11 @@ class User(UserMixin,db.Model):
 
     def init_chance(self):
         """初始化闯关机会"""
-        chance = Chance(user_id = self.id)
-        db.session.add(chance)
-        db.session.commit()
+        chance = Chance.query.filter_by(user_id=self.id).first()
+        if chance is None:
+            chance = Chance(user_id = self.id)
+            db.session.add(chance)
+            db.session.commit()
 
     @property
     def best_result(self):
@@ -485,10 +488,16 @@ class Chance(db.Model):
 
     id = db.Column(db.Integer,primary_key=True)
     user_id = db.Column(db.Integer,db.ForeignKey('users.id'))
-    left_chances = db.Column(db.Integer,default=1) # 当前测试资格
-    start_chances = db.Column(db.Integer,default=1)
+    left_chances = db.Column(db.Integer) # 当前测试资格
+    start_chances = db.Column(db.Integer)
     awarded_chances = db.Column(db.Integer,default=0)
     used_chances = db.Column(db.Integer,default=0)
+
+    # 初始化
+    def __init__(self,**kwargs):
+        super(Chance,self).__init__(**kwargs)
+        self.start_chances = current_app.config['CHANCE_DEFAULT_COUNT']
+        self.left_chances = self.start_chances
 
 
 

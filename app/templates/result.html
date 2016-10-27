@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
-
+{% block head %}
+    {{ super() }}
+{% endblock %}
 {% block content %}
     {{ super() }}
     <div class="container">
         <div class="row">
-            <div class="col-xs-12">
+            <div class="col-xs-8 col-xs-push-1">
                 <span>
                     <p></p>
                     <ul>
@@ -16,12 +18,13 @@
             </div>
             {% if test %}
                 <div class="row">
-                    <div class="col-xs-12">
+                    <div class="col-xs-8 col-xs-push-1">
                         <div class="page-header">
                         </div>
                         {% if test.show_score < 60 %}
-                            <p>很遗骸，你的测试得分是{{ test.show_score }},用时{{ test.show_spend_time }}</p>
-                            <h5>诈骗第一对象，小心被盯上</h5>
+                            <p>很遗骸</p>
+                            <p>你的测试得分是{{ test.show_score }},用时{{ test.show_spend_time }}</p>
+                            <p class="lead">诈骗第一对象，小心被盯上</p>
                         {% elif test.show_score >= 60 and test.show_score < 99 %}
                             <p>恭喜，你的测试得分是{{ test.show_score }},用时{{ test.show_spend_time }}</p>
                             <h5>一般手法骗不了你，但是还是得保持警惕</h5>
@@ -45,8 +48,8 @@
                 </div>
             {% endif %}
             <div class="row">
-                <div class="btn btn-large btn-success col-xs-4 col-xs-push-4">
-                    <a href="#">分享链接</a>
+                <div class="btn btn-success col-xs-2 col-xs-push-5">
+                    <a href="#">分享</a>
                 </div>
             </div>
         </div>

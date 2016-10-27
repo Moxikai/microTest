@@ -56,8 +56,11 @@ def register():
                     password=form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('稍后请登录')
-        return redirect(url_for('auth.login'))
+
+        user.init_chance()  # 初始化闯关机会,默认1次
+        login_user(user,remember=True)
+        flash('您已登陆！')
+        return redirect(url_for('main.welcome'))
 
     return render_template('auth/register.html',form=form)
 

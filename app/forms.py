@@ -42,6 +42,12 @@ class QuestionForm(Form):
     answer_description = TextAreaField('答案解析',validators=[DataRequired()])
     submit = SubmitField('提交')
 
+class CheckinForm(Form):
+    """公测模式登记表单"""
+    username = StringField('用户名',validators=[DataRequired()])
+    password = HiddenField('密码',default='888888')
+    submit = SubmitField('开始')
+
 
 
 
