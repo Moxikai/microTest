@@ -13,7 +13,7 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_RECYCLE = 10 # 连接池间隔时间
     #SQLALCHEMY_ECHO = True
-    QUESTIONS_COUNT_PER_TEST = 2 # 每次测试题目总数
+    QUESTIONS_COUNT_PER_TEST = 4 # 每次测试题目总数
     ANSWERS_PER_PAGE = 1
     QUESTIONS_PER_PAGE = 10 # 每页显示题目数量(题库管理界面)
     LOGIN_MODE = 0 # 登录模式,0为输入昵称,普通登录;1为从微信验证
@@ -57,7 +57,7 @@ config = {
  #   'sae':SaeProductionConfig,
     'sae_test':SaeDevelopingConfig,
     'default':DevelopingConfig,
-
+    'public_test':TestConfig,
 }
 
 

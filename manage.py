@@ -12,7 +12,7 @@ from app.models import Answer,Question,User,Share,Chance,Permission,Test,\
     Role
 
  # 实例化app
-app = create_app(os.environ.get('FLASK_CONFIG') or 'production')
+app = create_app(os.environ.get('FLASK_CONFIG') or 'public_test')
 manager = Manager(app)
 migrate = Migrate(app,db)
 
